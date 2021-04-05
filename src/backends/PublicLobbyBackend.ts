@@ -1,5 +1,6 @@
 import util from "util";
 import dns from "dns";
+import fs from "fs";
 import chalk from "chalk";
 
 import { SkeldjsClient } from "@skeldjs/client";
@@ -152,7 +153,7 @@ export default class PublicLobbyBackend extends BackendAdapter {
             return false;
 
         if (attempt >= max_attempts) {
-            this.log("fatal", "Couldn't join game.");
+            this.log(LogMode.Fatal, "Couldn't join game.");
             this.emitError("Couldn't join the game, make sure that the game hasn't started and there is a spot for the client.", true);
             return false;
         }
@@ -165,7 +166,7 @@ export default class PublicLobbyBackend extends BackendAdapter {
             const err = await this.initialSpawn(attempt >= max_attempts);
             if (err !== ConnectionErrorCode.None) {
                 if (err === ConnectionErrorCode.FailedToJoin) {
-                    this.log("fatal", "Couldn't join game.");
+                    this.log(LogMode.Fatal, "Couldn't join game.");
                     this.emitError("Couldn't join the game, make sure that the game hasn't started and there is a spot for the client.", true);
                     return false;
                 }
@@ -177,7 +178,7 @@ export default class PublicLobbyBackend extends BackendAdapter {
                 attempt++;
 
                 const remaining = max_attempts - attempt;
-                this.log("warn", "Failed to initially spawn, Retrying " + remaining + " more time" + (remaining === 1 ? "" : "s") + ", also trying another server.");
+                this.log(LogMode.Warn, "Failed to initially spawn, Retrying " + remaining + " more time" + (remaining === 1 ? "" : "s") + ", also trying another server.");
                 this.emitError("Couldn't connect to the server. Retrying " + remaining + " more time" + (remaining === 1 ? "" : "s") + ".", false);
                 return this.doJoin(max_attempts, attempt);
             }
@@ -189,7 +190,7 @@ export default class PublicLobbyBackend extends BackendAdapter {
         const ip = this.master[this.server][0];
         const port = this.master[this.server][1];
 
-        this.log("info", "Joining game with this.server %s:%i, not spawning, attempt #%i", ip, port, attempt + 1);
+        this.log(LogMode.Info, "Joining game with this.server %s:%i, not spawning, attempt #%i", ip, port, attempt + 1);
         
         try {
             await this.client.connect(ip, undefined, undefined, port);
@@ -200,7 +201,7 @@ export default class PublicLobbyBackend extends BackendAdapter {
             this.server = this.server % this.master.length;
             attempt++;
 
-            this.log("warn", "Failed to connect (" + err.message + "), Retrying " + (max_attempts - attempt) + " more times, also trying another server.");
+            this.log(LogMode.Warn, "Failed to connect (" + err.message + "), Retrying " + (max_attempts - attempt) + " more times, also trying another server.");
             this.emitError("Couldn't connect to the server. Retrying " + (max_attempts - attempt) + " more times.", false);
             return await this.doJoin(max_attempts, attempt);
         }
@@ -211,12 +212,12 @@ export default class PublicLobbyBackend extends BackendAdapter {
             const err = e as Error;
             attempt++;
 
-            this.log("warn", "Failed to join game (" + err.message + "), Retrying " + (max_attempts - attempt) + " more times.");
+            this.log(LogMode.Warn, "Failed to join game (" + err.message + "), Retrying " + (max_attempts - attempt) + " more times.");
             this.emitError(err.message + ". Retrying " + (max_attempts - attempt) + " more times.", false);
             return await this.doJoin(max_attempts, attempt);
         }
         
-        this.log("info", "Replacing state with cached state.. (%i objects, %i netobjects, %i room components)", this.players_cache.size, this.components_cache.size, this.global_cache.length);
+        this.log(LogMode.Info, "Replacing state with cached state.. (%i objects, %i netobjects, %i room components)", this.players_cache.size, this.components_cache.size, this.global_cache.length);
 
         for (const [ id, object ] of this.players_cache) {
             object.room = this.client;
@@ -235,10 +236,10 @@ export default class PublicLobbyBackend extends BackendAdapter {
             this.client.components[i] = component;
         }
 
-        this.log("success", "Joined & successfully replaced state!");
+        this.log(LogMode.Success, "Joined & successfully replaced state!");
 
         if (this.client.host && this.client.host.data) {
-            this.log("success", "Found host: " + this.client.host.data.name);
+            this.log(LogMode.Success, "Found host: " + this.client.host.data.name);
 
             this.emitHostChange(this.client.host.data.name);
         }
@@ -276,12 +277,37 @@ export default class PublicLobbyBackend extends BackendAdapter {
         this.destroyed = false;
 
         try {
-            this.log("info", "PublicLobbyBackend initialized in region " + this.backendModel.region);
+            this.log(LogMode.Info, "PublicLobbyBackend initialized in region " + this.backendModel.region);
 
             const dns = MatchmakerServers[this.backendModel.region];
             this.master = await this.resolveMMDNS(this.backendModel.region, dns);
 
             this.server = ~~(Math.random() * this.master.length);
+
+            // TODO: Implement actual getting-auth-token.
+            // Currently the GetAuthToken program is closed source to avoid cheating.
+            // This means that the PublicLobbyBackend will not work for those looking to self-host.
+            // You can still however use the Impostor backend, although it requires setting up an impostor private server.
+            // See https://github.com/auproximity/Impostor for the fork of Impostor required.
+            // See https://github.com/auproximity/AUP-Impostor for the plugin.
+            
+            if (!fs.existsSync("getAuthToken.js")) {
+                const err = `
+Currently the GetAuthToken program is closed source to prevent it being used for cheating.
+Once a proper solution is in-place to get an authorisation token to connect, it will become open source and available for everyone.
+For now however, the PublicLobbyBackend will not work for those looking to self-host.
+You can still however use the Impostor backend, although it requires setting up an impostor private server.
+See https://github.com/auproximity/Impostor for the fork of Impostor required.
+See https://github.com/auproximity/AUP-Impostor for the plugin.
+
+Keep up to date with updates at https://github.com/skeldjs/SkeldJS
+                `.trim();
+
+                this.emitError("PublicLobbyBackend not implemented, see console for more information.", true);
+                this.log(LogMode.Error, err);
+                return await this.destroy();
+            }
+
             const authTokenString = execSync("node getAuthToken.js " + this.master[this.server][0]);
             this.authToken = parseInt(authTokenString.toString("utf8"));
 
@@ -293,7 +319,7 @@ export default class PublicLobbyBackend extends BackendAdapter {
             this.client.on("client.disconnect", async ev => {
                 const { reason, message } = ev.data;
 
-                this.log("info", "Client disconnected: " + (reason === undefined ? "No reason." : (reason + " (" + message + ")")));
+                this.log(LogMode.Info, "Client disconnected: " + (reason === undefined ? "No reason." : (reason + " (" + message + ")")));
             });
 
             this.client.on("player.move", ev => {
@@ -308,10 +334,10 @@ export default class PublicLobbyBackend extends BackendAdapter {
                 const { player, position } = ev.data;
 
                 if (player.data) {
-                    this.log("log", "Got SnapTo for " + player.data.name + " (" + player.id + ") to x: " + position.x + " y: " + position.y);
+                    this.log(LogMode.Log, "Got SnapTo for " + player.data.name + " (" + player.id + ") to x: " + position.x + " y: " + position.y);
                     this.emitPlayerPosition(player.data.name, position);
                 } else {
-                    this.log("warn", "Got snapto, but there was no data.");
+                    this.log(LogMode.Warn, "Got snapto, but there was no data.");
                 }
             });
 
@@ -319,18 +345,18 @@ export default class PublicLobbyBackend extends BackendAdapter {
                 const { counter } = ev.data;
 
                 if (counter <= 5 && counter > 0) {
-                    this.log("info", "Game is starting in " + counter + " second" + (counter === 1 ? "" : "s"));
+                    this.log(LogMode.Info, "Game is starting in " + counter + " second" + (counter === 1 ? "" : "s"));
                 }
             });
 
             this.client.on("game.start", async () => {
                 this.emitGameState(GameState.Game);
-                this.log("info", "Game started.");
+                this.log(LogMode.Info, "Game started.");
             });
 
             this.client.on("game.end", async () => {
                 this.emitGameState(GameState.Lobby);
-                this.log("info", "Game ended, re-joining..");
+                this.log(LogMode.Info, "Game ended, re-joining..");
                 
                 if (!await this.doJoin())
                     return;
@@ -344,13 +370,13 @@ export default class PublicLobbyBackend extends BackendAdapter {
 
                 if (host.id === this.client.clientid) {
                     if (this.client.players.size === 1) {
-                        this.log("warn", "Everyone left, disconnecting to remove the game.");
+                        this.log(LogMode.Warn, "Everyone left, disconnecting to remove the game.");
                         await this.client.disconnect();
                         await this.destroy();
                         return;
                     }
 
-                    this.log("warn", "I became host, disconnecting and re-joining..");
+                    this.log(LogMode.Warn, "I became host, disconnecting and re-joining..");
                     
                     await this.disconnect();
 
@@ -360,28 +386,28 @@ export default class PublicLobbyBackend extends BackendAdapter {
                 }
 
                 if (host && host.data) {
-                    this.log("info", host.data.name + " is now the host.");
+                    this.log(LogMode.Info, host.data.name + " is now the host.");
                     this.emitHostChange(host.data.name);
                 } else {
-                    this.log("warn", "Host changed, but there was no data.");
+                    this.log(LogMode.Warn, "Host changed, but there was no data.");
                 }
             });
 
             this.client.on("player.join", ev => {
                 const { player } = ev.data;
-                this.log("info", "Player with ID " + player.id + " joined the game.");
+                this.log(LogMode.Info, "Player with ID " + player.id + " joined the game.");
             });
 
             this.client.on("player.leave", ev => {
                 const { player } = ev.data;
-                this.log("log", "Player with ID " + player.id + " left or was removed.");
+                this.log(LogMode.Log, "Player with ID " + player.id + " left or was removed.");
             });
 
             this.client.on("system.sabotage", ev => {
                 const { system } = ev.data;
                 if (system.systemType === SystemType.Communications) {
                     this.emitGameFlags(GameFlag.CommsSabotaged, true);
-                    this.log("info", "Someone sabotaged communications.");
+                    this.log(LogMode.Info, "Someone sabotaged communications.");
                 }
             });
 
@@ -389,7 +415,7 @@ export default class PublicLobbyBackend extends BackendAdapter {
                 const { system } = ev.data;
                 if (system.systemType === SystemType.Communications) {
                     this.emitGameFlags(GameFlag.CommsSabotaged, false);
-                    this.log("info", "Someone repaired communications.");
+                    this.log(LogMode.Info, "Someone repaired communications.");
                 }
             });
 
@@ -398,13 +424,13 @@ export default class PublicLobbyBackend extends BackendAdapter {
                 if (settings.crewmateVision !== this.settings.crewmateVision) {
                     this.settings.crewmateVision = settings.crewmateVision;
 
-                    this.log("info", "Crewmate vision is now set to " + settings.crewmateVision + ".");
+                    this.log(LogMode.Info, "Crewmate vision is now set to " + settings.crewmateVision + ".");
                 }
                 
                 if (settings.map !== this.settings.map) {
                     this.settings.map = settings.map;
 
-                    this.log("info", "Map is now set to " + MapID[settings.map] + ".");
+                    this.log(LogMode.Info, "Map is now set to " + MapID[settings.map] + ".");
                 }
                 
                 this.emitSettingsUpdate(this.settings);
@@ -413,12 +439,12 @@ export default class PublicLobbyBackend extends BackendAdapter {
             this.client.on("player.setname", ev => {
                 const { player, name } = ev.data;
                 if (player.data) {
-                    this.log("info", player.id + " set their name to " + name + ".");
+                    this.log(LogMode.Info, player.id + " set their name to " + name + ".");
                 } else {
                     if (player) {
-                        this.log("warn", "Name was set for " + player.id + ", but there was no data.");
+                        this.log(LogMode.Warn, "Name was set for " + player.id + ", but there was no data.");
                     } else {
-                        this.log("warn", "Name was set for a player, but there was no data.");
+                        this.log(LogMode.Warn, "Name was set for a player, but there was no data.");
                     }
                 }
             });
@@ -426,13 +452,13 @@ export default class PublicLobbyBackend extends BackendAdapter {
             this.client.on("player.setcolor", ev => {
                 const { player, color } = ev.data;
                 if (player?.data) {
-                    this.log("info", player.data.name + " set their colour to " + ColorID[color] + ".");
+                    this.log(LogMode.Info, player.data.name + " set their colour to " + ColorID[color] + ".");
                     this.emitPlayerColor(player.data.name, color);
                 } else {
                     if (player) {
-                        this.log("warn", "Color was set for " + player.id + ", but there was no data.");
+                        this.log(LogMode.Warn, "Color was set for " + player.id + ", but there was no data.");
                     } else {
-                        this.log("warn", "Color was set for a player, but there was no data.");
+                        this.log(LogMode.Warn, "Color was set for a player, but there was no data.");
                     }
                 }
             });
@@ -452,15 +478,15 @@ export default class PublicLobbyBackend extends BackendAdapter {
                         
                         if (player) {
                             if (player.data) {
-                                this.log("log", player.data.name + " (" + player.id + ") called a meeting.");
+                                this.log(LogMode.Log, player.data.name + " (" + player.id + ") called a meeting.");
                             } else {
-                                this.log("warn", "A player with ID " + player.id + " called a meeting, but there was no data.");
+                                this.log(LogMode.Warn, "A player with ID " + player.id + " called a meeting, but there was no data.");
                             }
                         } else {
-                            this.log("warn", "Someone called a meeting, but there was no data for the reporter.");
+                            this.log(LogMode.Warn, "Someone called a meeting, but there was no data for the reporter.");
                         }
                     } else {
-                        this.log("warn", "Someone called a meeting, but there was no data for the reporter.");
+                        this.log(LogMode.Warn, "Someone called a meeting, but there was no data for the reporter.");
                     }
                 }
             });
@@ -470,37 +496,37 @@ export default class PublicLobbyBackend extends BackendAdapter {
                 if (ejected && ejected.data) {
                     this.emitGameState(GameState.Game);
                     this.emitPlayerFlags(ejected.data.name, PlayerFlag.IsDead, true);
-                    this.log("log", ejected.data.name + " (" + ejected.id + ") was voted off");
+                    this.log(LogMode.Log, ejected.data.name + " (" + ejected.id + ") was voted off");
                 }
             });
 
             this.client.on("player.murder", ev => {
                 const { victim } = ev.data;
                 if (victim && victim.data) {
-                    this.log("info", victim.data.name + " (" + victim.id + ") was murdered.");
+                    this.log(LogMode.Info, victim.data.name + " (" + victim.id + ") was murdered.");
                     this.emitPlayerFlags(victim.data.name, PlayerFlag.IsDead, true);
                 } else {
-                    this.log("warn", "Someone got murdered, but there was no data.");
+                    this.log(LogMode.Warn, "Someone got murdered, but there was no data.");
                 }
             });
 
             this.client.on("player.entervent", ev => {
                 const { player, ventid } = ev.data;
                 if (player && player.data) {
-                    this.log("log", player.data.name + " (" + player.id + ") entered vent '" + this.getVentName(ventid) + "'.");
+                    this.log(LogMode.Log, player.data.name + " (" + player.id + ") entered vent '" + this.getVentName(ventid) + "'.");
                     this.emitPlayerFlags(player.data.name, PlayerFlag.InVent, true);
                 } else {
-                    this.log("warn", "Someone entered a vent, but there was no data.");
+                    this.log(LogMode.Warn, "Someone entered a vent, but there was no data.");
                 }
             });
 
             this.client.on("player.exitvent", ev => {
                 const { player, ventid } = ev.data;
                 if (player && player.data) {
-                    this.log("log", player.data.name + " (" + player.id + ") exited vent '" + this.getVentName(ventid) + "'.");
+                    this.log(LogMode.Log, player.data.name + " (" + player.id + ") exited vent '" + this.getVentName(ventid) + "'.");
                     this.emitPlayerFlags(player.data.name, PlayerFlag.InVent, true);
                 } else {
-                    this.log("warn", "Someone exited a vent, but there was no data.");
+                    this.log(LogMode.Warn, "Someone exited a vent, but there was no data.");
                 }
             });
 
@@ -509,10 +535,10 @@ export default class PublicLobbyBackend extends BackendAdapter {
                 for (let i = 0; i < impostors.length; i++) {
                     const player = impostors[i];
                     if (player?.data) {
-                        this.log("info", player.data.name + " was made impostor.");
+                        this.log(LogMode.Info, player.data.name + " was made impostor.");
                         this.emitPlayerFlags(player.data.name, PlayerFlag.IsImpostor, true);
                     } else {
-                        this.log("warn", "Someone was made impostor, but there was no data.");
+                        this.log(LogMode.Warn, "Someone was made impostor, but there was no data.");
                     }
                 }
             });
@@ -522,7 +548,7 @@ export default class PublicLobbyBackend extends BackendAdapter {
                 const client = this.client.getPlayerByPlayerId(playerData.playerId);
 
                 if (playerData) {
-                    this.log("info", "Removed " + playerData.name + (client ? " (" + client.id + ")" : ""));
+                    this.log(LogMode.Info, "Removed " + playerData.name + (client ? " (" + client.id + ")" : ""));
                     this.emitPlayerColor(playerData.name, -1);
                 }
             });
@@ -530,27 +556,27 @@ export default class PublicLobbyBackend extends BackendAdapter {
             this.client.on("security.cameras.join", ev => {
                 const { player } = ev.data;
                 if (player?.data) {
-                    this.log("info", player.data.name + " (" + player.id + ") went onto cameras.");
+                    this.log(LogMode.Info, player.data.name + " (" + player.id + ") went onto cameras.");
                     this.emitPlayerFlags(player.data.name, PlayerFlag.OnCams, true);
                 } else {
-                    this.log("warn", "Someone went onto cameras, but there was no data.");
+                    this.log(LogMode.Warn, "Someone went onto cameras, but there was no data.");
                 }
             });
 
             this.client.on("security.cameras.leave", ev => {
                 const { player } = ev.data;
                 if (player?.data) {
-                    this.log("info", player.data.name + " (" + player.id + ") went off cameras.");
+                    this.log(LogMode.Info, player.data.name + " (" + player.id + ") went off cameras.");
                     this.emitPlayerFlags(player.data.name, PlayerFlag.OnCams, false);
                 } else {
-                    this.log("warn", "Someone went off cameras, but there was no data.");
+                    this.log(LogMode.Warn, "Someone went off cameras, but there was no data.");
                 }
             });
 
-            this.log("success", "Initialized PublicLobbyBackend!");
+            this.log(LogMode.Success, "Initialized PublicLobbyBackend!");
         } catch (err) {
-            this.log("error", "An error occurred.");
-            this.log("error", err);
+            this.log(LogMode.Error, "An error occurred.");
+            this.log(LogMode.Error, err);
             this.emitError("An unknown error occurred, join the discord to contact an admin for help.", true);
             await this.destroy();
         }
@@ -605,7 +631,7 @@ export default class PublicLobbyBackend extends BackendAdapter {
         const ip = this.master[this.server][0];
         const port = this.master[this.server][1];
         
-        this.log("info", "Joining for the first time with server %s:%i", ip, port);
+        this.log(LogMode.Info, "Joining for the first time with server %s:%i", ip, port);
         try {
             await this.client.connect(ip, undefined, undefined, port);
             if (!this.client)
@@ -616,17 +642,17 @@ export default class PublicLobbyBackend extends BackendAdapter {
                 return ConnectionErrorCode.TimedOut;
             }
         } catch (e) {
-            this.log("fatal", e.toString());
+            this.log(LogMode.Fatal, e.toString());
             this.emitError("Couldn't connect to the Among Us servers, the servers may be full. Try a different region or try again later.", true);
             return ConnectionErrorCode.FailedToConnect;
         }
-        this.log("success", "Successfully connected.");
+        this.log(LogMode.Success, "Successfully connected.");
 
         if (!this.client) {
             return ConnectionErrorCode.NoClient;
         }
         
-        this.log("info", "Joining room..");
+        this.log(LogMode.Info, "Joining room..");
         try {
             const code = await Promise.race([this.client.joinGame(this.backendModel.gameCode, false), sleep(5000)]);
             if (!code) {
@@ -634,13 +660,13 @@ export default class PublicLobbyBackend extends BackendAdapter {
                 return ConnectionErrorCode.TimedOut;
             }
         } catch (e) {
-            this.log("fatal", e.toString());
+            this.log(LogMode.Fatal, e.toString());
             if (isFinal) this.emitError("Couldn't join the game, make sure that the game hasn't started and there is a spot for the client.", true);
             return ConnectionErrorCode.FailedToJoin;
         }
 
-        this.log("success", "Successfully joined room.");
-        this.log("info", "Waiting for spawns and settings..");
+        this.log(LogMode.Success, "Successfully joined room.");
+        this.log(LogMode.Info, "Waiting for spawns and settings..");
         const code = this.client.code;
         if (!code) {
             return ConnectionErrorCode.FailedToJoin;
@@ -650,7 +676,7 @@ export default class PublicLobbyBackend extends BackendAdapter {
         
         const result = await Promise.race([Promise.all([this.awaitSpawns(), this.awaitSettings()]), sleep(5000)]);
         if (!result) {
-            this.log("fatal", "I didn't receive either spawns or settings from the host.");
+            this.log(LogMode.Fatal, "I didn't receive either spawns or settings from the host.");
             if (isFinal) this.emitError("Did not recieve players and settings, please restart your Among Us lobby, or wait a few minutes and try again.", true);
             return ConnectionErrorCode.TimedOut;
         }
@@ -662,7 +688,7 @@ export default class PublicLobbyBackend extends BackendAdapter {
         const [ , settings ] = result;
         
         if (!settings) {
-            this.log("fatal", "I didn't receive settings from the host.");
+            this.log(LogMode.Fatal, "I didn't receive settings from the host.");
             if (isFinal) this.emitError("Did not recieve game settings, please restart your Among Us lobby, or wait a few minutes and try again.", true);
             return ConnectionErrorCode.TimedOut;
         }
@@ -673,15 +699,15 @@ export default class PublicLobbyBackend extends BackendAdapter {
             crewmateVision: this.settings.crewmateVision,
             map: settings.map
         });
-        this.log("info", "Crewmate vision is at " + settings.crewmateVision);
-        this.log("info", "Map is on " + MapID[settings.map]);
+        this.log(LogMode.Info, "Crewmate vision is at " + settings.crewmateVision);
+        this.log(LogMode.Info, "Map is on " + MapID[settings.map]);
         
         if (this.client.host && this.client.host.data) {
             this.emitHostChange(this.client.host.data.name);
         }
 
-        this.log("success", "Got spawns and settings.");
-        this.log("info", "Cleaning up and preparing for re-join..");
+        this.log(LogMode.Success, "Got spawns and settings.");
+        this.log(LogMode.Info, "Cleaning up and preparing for re-join..");
 
         for (const [ , player ] of this.client.players) {
             if (player && player.data) {
@@ -712,7 +738,7 @@ export default class PublicLobbyBackend extends BackendAdapter {
             this.client = undefined;
         }
 
-        this.log("info", "Destroyed PublicLobbyBackend.");
+        this.log(LogMode.Info, "Destroyed PublicLobbyBackend.");
         this.destroyed = true;
     }
 }

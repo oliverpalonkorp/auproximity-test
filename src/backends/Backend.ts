@@ -1,4 +1,6 @@
 import { ColorID } from "@skeldjs/constant";
+import { Vector2 } from "@skeldjs/util";
+
 import { EventEmitter } from "events";
 import util from "util";
 import chalk from "chalk";
@@ -11,9 +13,15 @@ import { BackendEvent } from "../types/enums/BackendEvents";
 import { PlayerFlag } from "../types/enums/PlayerFlags";
 import { GameState } from "../types/enums/GameState";
 import { GameFlag } from "../types/enums/GameFlags";
-import { Vector2 } from "@skeldjs/util";
 
-export type LogMode = "log"|"info"|"success"|"fatal"|"warn"|"error";
+export enum LogMode {
+    Log = "log",
+    Info = "info",
+    Success = "success",
+    Fatal = "fatal",
+    Warn = "warn",
+    Error = "error"
+}
 
 // Actual backend class
 export abstract class BackendAdapter extends EventEmitter {

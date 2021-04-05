@@ -1,6 +1,6 @@
 import { BackendType, BackendModel } from "../types/models/Backends";
 
-import { BackendAdapter} from "./Backend";
+import { BackendAdapter, LogMode} from "./Backend";
 
 export default class NoOpBackend extends BackendAdapter {
     backendModel: BackendModel;
@@ -17,10 +17,10 @@ export default class NoOpBackend extends BackendAdapter {
     }
 
     initialize(): void {
-        this.log("info", "Initialized NoOp backend.");
+        this.log(LogMode.Info, "Initialized NoOp backend.");
     }
 
     destroy(): void {
-        this.log("info", "Destroying NoOp backend.");
+        this.log(LogMode.Info, "Destroying NoOp backend.");
     }
 }

@@ -1,3 +1,4 @@
+import { Vector2 } from "@skeldjs/util";
 import { HubConnection, HubConnectionBuilder } from "@microsoft/signalr";
 import _ from "lodash";
 
@@ -5,12 +6,11 @@ import { ImpostorBackendModel } from "../types/models/Backends";
 
 import { IMPOSTOR_BACKEND_PORT } from "../consts";
 
-import { BackendAdapter } from "./Backend";
+import { BackendAdapter, LogMode } from "./Backend";
 import { GameSettings } from "../types/models/ClientOptions";
 import { GameState } from "../types/enums/GameState";
 import { PlayerFlag } from "../types/enums/PlayerFlags";
 import { GameFlag } from "../types/enums/GameFlags";
-import { Vector2 } from "@skeldjs/util";
 
 export default class ImpostorBackend extends BackendAdapter {
     backendModel: ImpostorBackendModel;
@@ -31,7 +31,7 @@ export default class ImpostorBackend extends BackendAdapter {
                 .withUrl(`http://${this.backendModel.ip}:${IMPOSTOR_BACKEND_PORT}/hub`).build();
 
             this.connection.on(ImpostorSocketEvents.HostChange, (name: string) => {
-                this.log("info", "Host changed to " + name + ".");
+                this.log(LogMode.Info, "Host changed to " + name + ".");
                 this.emitHostChange(name);
             });
 
@@ -57,30 +57,30 @@ export default class ImpostorBackend extends BackendAdapter {
 
             this.connection.on(ImpostorSocketEvents.CommsSabotage, (fix: boolean) => {
                 if (fix) {
-                    this.log("info", "Communications was repaired.");
+                    this.log(LogMode.Info, "Communications was repaired.");
                     this.emitGameFlags(GameFlag.CommsSabotaged, false);
                 } else {
-                    this.log("info", "Communications was sabotaged.");
+                    this.log(LogMode.Info, "Communications was sabotaged.");
                     this.emitGameFlags(GameFlag.CommsSabotaged, true);
                 }
             });
 
             this.connection.on(ImpostorSocketEvents.GameEnd, () => {
-                this.log("info", "Game ended.");
+                this.log(LogMode.Info, "Game ended.");
                 this.emitGameState(GameState.Lobby);
             });
 
-            this.log("info", `Impostor Backend initialized at http://${this.backendModel.ip}:${IMPOSTOR_BACKEND_PORT}/hub`);
+            this.log(LogMode.Info, `Impostor Backend initialized at http://${this.backendModel.ip}:${IMPOSTOR_BACKEND_PORT}/hub`);
             this.connection.start()
                 .then(() => this.connection.send(ImpostorSocketEvents.TrackGame, this.backendModel.gameCode))
-                .catch(err => this.log("error", `Error in ImpostorBackend: ${err}`));
+                .catch(err => this.log(LogMode.Error, `Error in ImpostorBackend: ${err}`));
         } catch (err) {
-            this.log("error", `Error in ImpostorBackend: ${err}`);
+            this.log(LogMode.Error, `Error in ImpostorBackend: ${err}`);
         }
     }
 
     async destroy(): Promise<void> {
-        this.log("info", "Destroyed Impostor Backend.");
+        this.log(LogMode.Info, "Destroyed Impostor Backend.");
         return await this.connection.stop();
     }
 }
