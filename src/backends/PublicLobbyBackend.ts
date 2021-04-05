@@ -24,7 +24,8 @@ import {
     Networkable,
     PlayerData,
     GameData,
-    MapVentData
+    MapVentData,
+    MeetingHud
 } from "@skeldjs/core";
 
 import logger from "../util/logger";
@@ -37,13 +38,14 @@ import {
 } from "./Backend";
 
 import { PlayerFlag } from "../types/enums/PlayerFlags";
-import { DebugLevel } from "@skeldjs/client/js/lib/interface/ClientConfig";
 import { GameSettings } from "../types/models/ClientOptions";
 import { MatchmakerServers } from "../types/constants/MatchmakerServers";
 import { GameState } from "../types/enums/GameState";
 import { GameFlag } from "../types/enums/GameFlags";
+import { execSync } from "child_process";
 
-const GAME_VERSION = "2021.3.5.0";
+const GAME_VERSION = "2021.3.25.0";
+
 // Using integer for now, version parsing isn't working on SkeldJS with 2020.3.5.0 for some reason.
 // I'm keeping this comment here because it shows how stupid I am that it is in fact 2021 and not 2020.
 
@@ -99,6 +101,7 @@ export default class PublicLobbyBackend extends BackendAdapter {
 
     client: SkeldjsClient;
 
+    authToken: number;
     master: RegionServers;
     server: number;
 
@@ -155,7 +158,7 @@ export default class PublicLobbyBackend extends BackendAdapter {
         }
         
         if (!this.client) {
-            this.client = new SkeldjsClient(GAME_VERSION, { debug: DebugLevel.None, allowHost: false });
+            this.client = new SkeldjsClient(GAME_VERSION, { allowHost: false });
         }
 
         if (!this.players_cache || !this.components_cache || !this.global_cache) {
@@ -189,8 +192,8 @@ export default class PublicLobbyBackend extends BackendAdapter {
         this.log("info", "Joining game with this.server %s:%i, not spawning, attempt #%i", ip, port, attempt + 1);
         
         try {
-            await this.client.connect(ip, port);
-            await this.client.identify("auproxy");
+            await this.client.connect(ip, undefined, undefined, port);
+            await this.client.identify("auproxy", this.authToken);
         } catch (e) {
             const err = e as Error;
             this.server++;
@@ -279,21 +282,31 @@ export default class PublicLobbyBackend extends BackendAdapter {
             this.master = await this.resolveMMDNS(this.backendModel.region, dns);
 
             this.server = ~~(Math.random() * this.master.length);
+            const authTokenString = execSync("node getAuthToken.js " + this.master[this.server][0]);
+            this.authToken = parseInt(authTokenString.toString("utf8"));
+
+            console.log(this.authToken);
 
             if (!await this.doJoin())
                 return;
 
-            this.client.on("client.disconnect", async (ev, { reason, message }) => {
+            this.client.on("client.disconnect", async ev => {
+                const { reason, message } = ev.data;
+
                 this.log("info", "Client disconnected: " + (reason === undefined ? "No reason." : (reason + " (" + message + ")")));
             });
 
-            this.client.on("player.move", (ev, { player, position }) => {
+            this.client.on("player.move", ev => {
+                const { player, position } = ev.data;
+
                 if (player.data) {
                     this.emitPlayerPosition(player.data.name, position);
                 }
             });
 
-            this.client.on("player.snapto", (ev, { player, position }) => {
+            this.client.on("player.snapto", ev => {
+                const { player, position } = ev.data;
+
                 if (player.data) {
                     this.log("log", "Got SnapTo for " + player.data.name + " (" + player.id + ") to x: " + position.x + " y: " + position.y);
                     this.emitPlayerPosition(player.data.name, position);
@@ -302,7 +315,9 @@ export default class PublicLobbyBackend extends BackendAdapter {
                 }
             });
 
-            this.client.on("player.setstartcounter", (ev, { counter }) => {
+            this.client.on("player.setstartcounter", ev => {
+                const { counter } = ev.data;
+
                 if (counter <= 5 && counter > 0) {
                     this.log("info", "Game is starting in " + counter + " second" + (counter === 1 ? "" : "s"));
                 }
@@ -321,7 +336,9 @@ export default class PublicLobbyBackend extends BackendAdapter {
                     return;
             });
 
-            this.client.on("player.sethost", async (ev, { player: host }) => {
+            this.client.on("player.sethost", async ev => {
+                const { player: host } = ev.data;
+
                 if(!host)
                     return;
 
@@ -350,29 +367,34 @@ export default class PublicLobbyBackend extends BackendAdapter {
                 }
             });
 
-            this.client.on("player.join", (ev, { player }) => {
+            this.client.on("player.join", ev => {
+                const { player } = ev.data;
                 this.log("info", "Player with ID " + player.id + " joined the game.");
             });
 
-            this.client.on("player.leave", (ev, { player }) => {
+            this.client.on("player.leave", ev => {
+                const { player } = ev.data;
                 this.log("log", "Player with ID " + player.id + " left or was removed.");
             });
 
-            this.client.on("system.sabotage", (ev, { system }) => {
+            this.client.on("system.sabotage", ev => {
+                const { system } = ev.data;
                 if (system.systemType === SystemType.Communications) {
                     this.emitGameFlags(GameFlag.CommsSabotaged, true);
                     this.log("info", "Someone sabotaged communications.");
                 }
             });
 
-            this.client.on("system.repair", (ev, { system }) => {
+            this.client.on("system.repair", ev => {
+                const { system } = ev.data;
                 if (system.systemType === SystemType.Communications) {
                     this.emitGameFlags(GameFlag.CommsSabotaged, false);
                     this.log("info", "Someone repaired communications.");
                 }
             });
 
-            this.client.on("player.syncsettings", (ev, { settings }) => {
+            this.client.on("player.syncsettings", ev => {
+                const { settings } = ev.data;
                 if (settings.crewmateVision !== this.settings.crewmateVision) {
                     this.settings.crewmateVision = settings.crewmateVision;
 
@@ -388,7 +410,8 @@ export default class PublicLobbyBackend extends BackendAdapter {
                 this.emitSettingsUpdate(this.settings);
             });
 
-            this.client.on("player.setname", (ev, { player, name }) => {
+            this.client.on("player.setname", ev => {
+                const { player, name } = ev.data;
                 if (player.data) {
                     this.log("info", player.id + " set their name to " + name + ".");
                 } else {
@@ -400,7 +423,8 @@ export default class PublicLobbyBackend extends BackendAdapter {
                 }
             });
 
-            this.client.on("player.setcolor", (ev, { player, color }) => {
+            this.client.on("player.setcolor", ev => {
+                const { player, color } = ev.data;
                 if (player?.data) {
                     this.log("info", player.data.name + " set their colour to " + ColorID[color] + ".");
                     this.emitPlayerColor(player.data.name, color);
@@ -414,11 +438,13 @@ export default class PublicLobbyBackend extends BackendAdapter {
             });
 
             this.client.on("player.meeting", async () => {
-                const [ , { component } ] = await this.client.wait("component.spawn");
+                const ev = await this.client.wait("component.spawn");
+                const { component } = ev.data;
                 if (component.classname === "MeetingHud") {
+                    const meetinghud = component as MeetingHud;
                     this.emitGameState(GameState.Meeting);
 
-                    const all_states = [...component.players.values()];
+                    const all_states = [...meetinghud.states.values()];
                     const state = all_states.find(state => state.reported);
                     
                     if (state) {
@@ -439,7 +465,8 @@ export default class PublicLobbyBackend extends BackendAdapter {
                 }
             });
 
-            this.client.on("meetinghud.votingcomplete", (ev, { ejected }) => {
+            this.client.on("meetinghud.votingcomplete", ev => {
+                const { ejected } = ev.data;
                 if (ejected && ejected.data) {
                     this.emitGameState(GameState.Game);
                     this.emitPlayerFlags(ejected.data.name, PlayerFlag.IsDead, true);
@@ -447,7 +474,8 @@ export default class PublicLobbyBackend extends BackendAdapter {
                 }
             });
 
-            this.client.on("player.murder", (ev, { victim }) => {
+            this.client.on("player.murder", ev => {
+                const { victim } = ev.data;
                 if (victim && victim.data) {
                     this.log("info", victim.data.name + " (" + victim.id + ") was murdered.");
                     this.emitPlayerFlags(victim.data.name, PlayerFlag.IsDead, true);
@@ -456,7 +484,8 @@ export default class PublicLobbyBackend extends BackendAdapter {
                 }
             });
 
-            this.client.on("player.entervent", (ev, { player, ventid }) => {
+            this.client.on("player.entervent", ev => {
+                const { player, ventid } = ev.data;
                 if (player && player.data) {
                     this.log("log", player.data.name + " (" + player.id + ") entered vent '" + this.getVentName(ventid) + "'.");
                     this.emitPlayerFlags(player.data.name, PlayerFlag.InVent, true);
@@ -465,7 +494,8 @@ export default class PublicLobbyBackend extends BackendAdapter {
                 }
             });
 
-            this.client.on("player.exitvent", (ev, { player, ventid }) => {
+            this.client.on("player.exitvent", ev => {
+                const { player, ventid } = ev.data;
                 if (player && player.data) {
                     this.log("log", player.data.name + " (" + player.id + ") exited vent '" + this.getVentName(ventid) + "'.");
                     this.emitPlayerFlags(player.data.name, PlayerFlag.InVent, true);
@@ -474,7 +504,8 @@ export default class PublicLobbyBackend extends BackendAdapter {
                 }
             });
 
-            this.client.on("player.setimpostors", (ev, { impostors }) => {
+            this.client.on("player.setimpostors", ev => {
+                const { impostors } = ev.data;
                 for (let i = 0; i < impostors.length; i++) {
                     const player = impostors[i];
                     if (player?.data) {
@@ -486,7 +517,8 @@ export default class PublicLobbyBackend extends BackendAdapter {
                 }
             });
 
-            this.client.on("gamedata.removeplayer", (ev, { playerData }) => {
+            this.client.on("gamedata.removeplayer", ev => {
+                const { playerData } = ev.data;
                 const client = this.client.getPlayerByPlayerId(playerData.playerId);
 
                 if (playerData) {
@@ -495,7 +527,8 @@ export default class PublicLobbyBackend extends BackendAdapter {
                 }
             });
 
-            this.client.on("security.cameras.join", (ev, { player }) => {
+            this.client.on("security.cameras.join", ev => {
+                const { player } = ev.data;
                 if (player?.data) {
                     this.log("info", player.data.name + " (" + player.id + ") went onto cameras.");
                     this.emitPlayerFlags(player.data.name, PlayerFlag.OnCams, true);
@@ -504,7 +537,8 @@ export default class PublicLobbyBackend extends BackendAdapter {
                 }
             });
 
-            this.client.on("security.cameras.leave", (ev, { player }) => {
+            this.client.on("security.cameras.leave", ev => {
+                const { player } = ev.data;
                 if (player?.data) {
                     this.log("info", player.data.name + " (" + player.id + ") went off cameras.");
                     this.emitPlayerFlags(player.data.name, PlayerFlag.OnCams, false);
@@ -530,12 +564,12 @@ export default class PublicLobbyBackend extends BackendAdapter {
             // eslint-disable-next-line @typescript-eslint/no-this-alias
             const _this = this;
 
-            this.client.on("component.spawn", function onSpawn(ev, { component }) {
+            this.client.on("component.spawn", function onSpawn(ev) {
+                const { component } = ev.data;
                 if (component.classname === "GameData") {
                     gamedataSpawned = true;
 
                     const gamedata = component as GameData;
-
                     for (const [ , player ] of gamedata.players) {
                         if (player.name) _this.emitPlayerColor(player.name, player.color);
                     }
@@ -562,9 +596,9 @@ export default class PublicLobbyBackend extends BackendAdapter {
             return this.client.settings;
         }
 
-        const [ , { settings } ] = await this.client.wait("player.syncsettings");
+        const ev = await this.client.wait("player.syncsettings");
 
-        return settings;
+        return ev.data.settings;
     }
 
     async initialSpawn(isFinal = false): Promise<ConnectionErrorCode> {
@@ -573,10 +607,10 @@ export default class PublicLobbyBackend extends BackendAdapter {
         
         this.log("info", "Joining for the first time with server %s:%i", ip, port);
         try {
-            await this.client.connect(ip, port);
+            await this.client.connect(ip, undefined, undefined, port);
             if (!this.client)
                 return ConnectionErrorCode.NoClient;
-            await Promise.race([this.client.identify("auproxy"), sleep(2000)]);
+            await Promise.race([this.client.identify("auproxy", this.authToken), sleep(2000)]);
             if (!this.client.identified) {
                 if (isFinal) this.emitError("Couldn't connect to the Among Us servers, the servers may be full. Try a different region or try again later.", true);
                 return ConnectionErrorCode.TimedOut;
@@ -594,7 +628,7 @@ export default class PublicLobbyBackend extends BackendAdapter {
         
         this.log("info", "Joining room..");
         try {
-            const code = await Promise.race([await this.client.joinGame(this.backendModel.gameCode), sleep(5000)]);
+            const code = await Promise.race([this.client.joinGame(this.backendModel.gameCode, false), sleep(5000)]);
             if (!code) {
                 if (isFinal) this.emitError("Timed out while connecting to servers.", true);
                 return ConnectionErrorCode.TimedOut;
@@ -611,10 +645,12 @@ export default class PublicLobbyBackend extends BackendAdapter {
         if (!code) {
             return ConnectionErrorCode.FailedToJoin;
         }
+
+        this.client.spawnSelf();
         
-        const result = await Promise.race([Promise.all([this.awaitSpawns(), this.awaitSettings()]), sleep(2000)]);
+        const result = await Promise.race([Promise.all([this.awaitSpawns(), this.awaitSettings()]), sleep(5000)]);
         if (!result) {
-            this.log("fatal", "I didn't receive one of spawns or settings from the host.");
+            this.log("fatal", "I didn't receive either spawns or settings from the host.");
             if (isFinal) this.emitError("Did not recieve players and settings, please restart your Among Us lobby, or wait a few minutes and try again.", true);
             return ConnectionErrorCode.TimedOut;
         }
@@ -640,7 +676,6 @@ export default class PublicLobbyBackend extends BackendAdapter {
         this.log("info", "Crewmate vision is at " + settings.crewmateVision);
         this.log("info", "Map is on " + MapID[settings.map]);
         
-        console.log(this.client.host.data);
         if (this.client.host && this.client.host.data) {
             this.emitHostChange(this.client.host.data.name);
         }
