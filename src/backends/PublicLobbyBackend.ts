@@ -2,6 +2,7 @@ import util from "util";
 import dns from "dns";
 import fs from "fs";
 import chalk from "chalk";
+import path from "path";
 import child_process from "child_process";
 
 import { SkeldjsClient } from "@skeldjs/client";
@@ -287,25 +288,38 @@ export default class PublicLobbyBackend extends BackendAdapter {
 
     getAuthToken(): Promise<number> {
         return new Promise((resolve, reject) => {
-            const process = child_process.spawn("node", ["getAuthToken.js", this.master[this.server][0]]);
-        
-            process.stdout.on("data", chunk => {
+            const ver = process.platform === "win32" ? "win-x64" : "linux-x64";
+            const tokenRegExp = /TOKEN:(\d+):TOKEN/;
+            
+            const pathToGetAuthToken = path.resolve(process.cwd(), "./GetAuthToken/hazeltest/GetAuthToken/bin/Release/net50/" + ver + "/GetAuthToken");
+            
+            const args = [
+                path.resolve(process.cwd(), "./PubsCert.pem"),
+                this.master[this.server][0]
+            ];
+            
+            const proc = child_process.spawn(pathToGetAuthToken, args);
+
+            proc.stdout.on("data", chunk => {
                 const out = chunk.toString("utf8");
 
-                if (/\d+/.test(out)) {
-                    const authToken = parseInt(out);
-                    process.kill();
+                if (tokenRegExp.test(out)) {
+                    const foundToken = tokenRegExp.exec(out.toString("utf8"))[1];
+            
+                    const authToken = parseInt(foundToken);
+                    proc.kill();
                     resolve(authToken);
                 }
             });
         
-            process.on("error", err => {
+            proc.on("error", err => {
+                proc.kill();
                 reject(err);
             });
 
             // eslint-disable-next-line promise/catch-or-return, promise/always-return
             sleep(5000).then(() => {
-                process.kill();
+                proc.kill();
                 reject(new Error("GetAuthToken took too long to get a token."));
             });
         });
@@ -341,29 +355,12 @@ export default class PublicLobbyBackend extends BackendAdapter {
 
             this.server = ~~(Math.random() * this.master.length);
 
-            // TODO: Implement actual getting-auth-token.
+            // TODO: Implement actual getting-auth-token (probably in skeldjs).
             // Currently the GetAuthToken program is closed source to avoid cheating.
             // This means that the PublicLobbyBackend will not work for those looking to self-host.
             // You can still however use the Impostor backend, although it requires setting up an impostor private server.
             // See https://github.com/auproximity/Impostor for the fork of Impostor required.
             // See https://github.com/auproximity/AUP-Impostor for the plugin.
-            
-            if (!fs.existsSync("getAuthToken.js")) {
-                const err = `
-Currently the GetAuthToken program is closed source to prevent it being used for cheating.
-Once a proper solution is in-place to get an authorisation token to connect, it will become open source and available for everyone.
-For now however, the PublicLobbyBackend will not work for those looking to self-host.
-You can still however use the Impostor backend, although it requires setting up an impostor private server.
-See https://github.com/auproximity/Impostor for the fork of Impostor required.
-See https://github.com/auproximity/AUP-Impostor for the plugin.
-
-Keep up to date with updates at https://github.com/skeldjs/SkeldJS
-                `.trim();
-
-                this.emitError("PublicLobbyBackend not implemented, see console for more information.", true);
-                this.log(LogMode.Error, err);
-                return await this.destroy();
-            }
 
             this.log(LogMode.Info, "Getting authorisation token from server..");
             this.authToken = await this.tryGetAuthToken();
