@@ -3,16 +3,10 @@
    <div class="text-center py-5">
      <h2>Tutorial</h2>
    </div>
-   <div class="pa-4">
+   <div class="pa-4 pb-10">
      <ul>
        <li v-for="(item, i) in items" :key="i">{{ item }}</li>
      </ul>
-   </div>
-   <div class="pa-3 text-center">
-     <p>Note: This software is meant to be used for Official Server Among Us Lobbies.
-       If you want to have a solution like a custom server plugin or BepInEx client mod, direct message
-       <span class="highlight">Cybershard#0001</span> on Discord.
-     </p>
    </div>
  </v-card>
 </template>

@@ -165,13 +165,16 @@ export default class PublicLobbyBackend extends BackendAdapter {
         if (!this.players_cache || !this.components_cache || !this.global_cache) {
             const err = await this.initialSpawn(attempt >= max_attempts);
             if (err !== ConnectionErrorCode.None) {
-                if (err === ConnectionErrorCode.FailedToJoin) {
-                    this.log(LogMode.Fatal, "Couldn't join game.");
-                    this.emitError("Couldn't join the game, make sure that the game hasn't started and there is a spot for the client.", true);
-                    return false;
-                }
+                if (err !== ConnectionErrorCode.NoClient) {
+                    if (err === ConnectionErrorCode.FailedToJoin) {
+                        this.log(LogMode.Fatal, "Couldn't join game.");
+                        this.emitError("Couldn't join the game, make sure that the game hasn't started and there is a spot for the client.", true);
+                        return false;
+                    }
 
-                await this.client.disconnect();
+                    await this.client.disconnect();
+                }
+                
 
                 this.server++;
                 this.server = this.server % this.master.length;
@@ -190,7 +193,7 @@ export default class PublicLobbyBackend extends BackendAdapter {
         const ip = this.master[this.server][0];
         const port = this.master[this.server][1];
 
-        this.log(LogMode.Info, "Joining game with this.server %s:%i, not spawning, attempt #%i", ip, port, attempt + 1);
+        this.log(LogMode.Info, "Joining game with server %s:%i, not spawning, attempt #%i", ip, port, attempt + 1);
         
         try {
             await this.client.connect(ip, undefined, undefined, port);
@@ -231,6 +234,9 @@ export default class PublicLobbyBackend extends BackendAdapter {
 
         for (let i = 0; i < this.global_cache.length; i++) {
             const component = this.global_cache[i];
+
+            if (!component)
+                return;
 
             component.room = this.client;
             this.client.components[i] = component;
@@ -308,10 +314,10 @@ Keep up to date with updates at https://github.com/skeldjs/SkeldJS
                 return await this.destroy();
             }
 
+            this.log(LogMode.Info, "Getting authorisation token from server..");
+
             const authTokenString = execSync("node getAuthToken.js " + this.master[this.server][0]);
             this.authToken = parseInt(authTokenString.toString("utf8"));
-
-            console.log(this.authToken);
 
             if (!await this.doJoin())
                 return;
@@ -734,6 +740,7 @@ Keep up to date with updates at https://github.com/skeldjs/SkeldJS
             return;
 
         if (this.client && this.client.socket) {
+            this.client.removeListeners("client.disconnect");
             await this.client.disconnect();
             this.client = undefined;
         }

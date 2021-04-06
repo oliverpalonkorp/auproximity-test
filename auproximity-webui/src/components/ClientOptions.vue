@@ -38,13 +38,13 @@
           :disabled="!$store.state.joinedRoom"
           @change="updateOptions"
         ></v-checkbox>
-        <v-checkbox
+        <!--<v-checkbox
           label="Walls block voice"
           v-model="$store.state.options.colliders"
           :readonly="$store.state.host !== $store.state.me.uuid"
           :disabled="!$store.state.joinedRoom"
           @change="updateOptions"
-        ></v-checkbox>
+        ></v-checkbox>-->
         <v-checkbox
           label="Hear through cameras"
           v-model="$store.state.options.paSystems"

@@ -24,6 +24,9 @@ import { PlayerFlag } from "./types/enums/PlayerFlags";
 import { state } from "./main";
 import { GameState } from "./types/enums/GameState";
 import { GameFlag } from "./types/enums/GameFlags";
+import { sleep } from "./util/sleep";
+
+const GameEndTimeout = 10 * 60 * 1000;
 
 export default class Room {
     public backendModel: BackendModel;
@@ -38,7 +41,7 @@ export default class Room {
     options: HostOptions = {
         falloff: 4.5,
         falloffVision: false,
-        colliders: true,
+        colliders: false,
         paSystems: true
     };
     settings: GameSettings = {
@@ -68,7 +71,6 @@ export default class Room {
             const client = this.getClientByName(payload.name);
 
             if (client) {
-                console.log(client.uuid, payload.position);
                 this.clients.forEach(c => {
                     c.setPositionOf(client.uuid, payload.position);
                 });
@@ -101,7 +103,8 @@ export default class Room {
         });
 
         this.backendAdapter.on(BackendEvent.GameState, async (payload: { state: GameState }) => {
-            if (payload.state === GameState.Lobby) {
+            this.state = payload.state;
+            if (this.state === GameState.Lobby) {
                 this.flags = GameFlag.None;
                 for (const [ , player ] of this.players) {
                     player.flags = PlayerFlag.None;
@@ -109,7 +112,7 @@ export default class Room {
             }
 
             this.clients.forEach(c => {
-                c.setGameState(payload.state);
+                c.setGameState(this.state);
                 for (const [ name, player ] of this.players) {
                     const client = this.getClientByName(name);
                     if (client) {
@@ -239,6 +242,35 @@ export default class Room {
         this.clients.forEach(c => {
             if (c.name !== this.hostname || host) c.setOptions(options);
         });
+    }
+
+    private waitForEnd(): Promise<void> {
+        return new Promise(resolve => {
+            // eslint-disable-next-line @typescript-eslint/no-this-alias
+            const _this = this;
+            this.backendAdapter.on(BackendEvent.GameState, async function onGameStateChange(payload: { state: GameState }) {
+                if (payload.state === GameState.Lobby) {
+                    _this.backendAdapter.off(BackendEvent.GameState, onGameStateChange);
+                    resolve();
+                }
+            });
+        });
+    }
+
+    async gracefulDestroy(): Promise<void> {
+        if (this.state !== GameState.Lobby) {
+            this.clients.forEach(c => {
+                c.sendError("AUProximity will be going into maintenance, you will not be able to start another game.", false);
+            });
+
+            await Promise.race([this.waitForEnd(), sleep(GameEndTimeout)]);
+        }
+
+        this.clients.forEach(c => {
+            c.sendError("Game closed for maintenance.", true);
+        });
+
+        await this.destroy();
     }
 
     async destroy(): Promise<void> {

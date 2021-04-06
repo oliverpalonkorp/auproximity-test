@@ -3,7 +3,7 @@
     <div class="text-center py-5">
       <h3>Star on Github</h3>
     </div>
-    <div class="pa-2 text-center">
+    <div class="pa-2 pb-4 text-center">
       <a class="githubbutton" :href="githubLink" target="_blank">
         <img src="@/assets/githublogo.png">
       </a>

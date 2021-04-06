@@ -80,6 +80,11 @@ export default class Client implements ClientBase {
 
         this.name = name;
 
+        if (state.isClosed) {
+            await this.sendError("AUProximity is currently undergoing maintenence.", true);
+            return;
+        }
+
         // TODO: make this just a deepEqual on backendModel
         let room = state.allRooms.find(room => {
             if (room.backendModel.gameCode !== backendModel.gameCode) return false;

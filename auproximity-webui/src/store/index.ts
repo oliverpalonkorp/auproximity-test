@@ -39,7 +39,7 @@ const state: State = {
   options: {
     falloff: 4.5,
     falloffVision: false,
-    colliders: true,
+    colliders: false,
     paSystems: true
   },
   clientOptions: {
