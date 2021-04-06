@@ -2,6 +2,7 @@ import util from "util";
 import dns from "dns";
 import fs from "fs";
 import chalk from "chalk";
+import child_process from "child_process";
 
 import { SkeldjsClient } from "@skeldjs/client";
 import * as text from "@skeldjs/text";
@@ -43,7 +44,6 @@ import { GameSettings } from "../types/models/ClientOptions";
 import { MatchmakerServers } from "../types/constants/MatchmakerServers";
 import { GameState } from "../types/enums/GameState";
 import { GameFlag } from "../types/enums/GameFlags";
-import { execSync } from "child_process";
 
 const GAME_VERSION = "2021.3.25.0";
 
@@ -223,11 +223,17 @@ export default class PublicLobbyBackend extends BackendAdapter {
         this.log(LogMode.Info, "Replacing state with cached state.. (%i objects, %i netobjects, %i room components)", this.players_cache.size, this.components_cache.size, this.global_cache.length);
 
         for (const [ id, object ] of this.players_cache) {
+            if (!object)
+                continue;
+
             object.room = this.client;
             this.client.objects.set(id, object);
         }
         
         for (const  [ id, component ] of this.components_cache) {
+            if (!component)
+                continue;
+
             component.room = this.client;
             this.client.netobjects.set(id, component);
         }
@@ -236,7 +242,7 @@ export default class PublicLobbyBackend extends BackendAdapter {
             const component = this.global_cache[i];
 
             if (!component)
-                return;
+                continue;
 
             component.room = this.client;
             this.client.components[i] = component;
@@ -279,6 +285,51 @@ export default class PublicLobbyBackend extends BackendAdapter {
         return regions[region];
     }
 
+    getAuthToken(): Promise<number> {
+        return new Promise((resolve, reject) => {
+            const process = child_process.spawn("node", ["getAuthToken.js", this.master[this.server][0]]);
+        
+            process.stdout.on("data", chunk => {
+                const out = chunk.toString("utf8");
+
+                if (/\d+/.test(out)) {
+                    const authToken = parseInt(out);
+                    process.kill();
+                    resolve(authToken);
+                }
+            });
+        
+            process.on("error", err => {
+                reject(err);
+            });
+
+            // eslint-disable-next-line promise/catch-or-return, promise/always-return
+            sleep(5000).then(() => {
+                process.kill();
+                reject(new Error("GetAuthToken took too long to get a token."));
+            });
+        });
+    }
+
+    async tryGetAuthToken(cur_attempt = 0): Promise<number> {
+        try {
+            return await this.getAuthToken();
+        } catch (e) {
+            cur_attempt++;
+            const remaining = 5 - cur_attempt;
+            
+            this.log(LogMode.Error, "Failed to get authorisation token, trying " + remaining + " more times. " + (e?.message?.toString() || e));
+
+            if (remaining) {
+                this.emitError("Failed to authorize with among us servers, trying " + remaining + " more times.", false);
+                return await this.tryGetAuthToken(cur_attempt);
+            } else {
+                await this.destroy();
+                return null;
+            }
+        }
+    }
+
     async initialize(): Promise<void> {
         this.destroyed = false;
 
@@ -315,9 +366,15 @@ Keep up to date with updates at https://github.com/skeldjs/SkeldJS
             }
 
             this.log(LogMode.Info, "Getting authorisation token from server..");
+            this.authToken = await this.tryGetAuthToken();
 
-            const authTokenString = execSync("node getAuthToken.js " + this.master[this.server][0]);
-            this.authToken = parseInt(authTokenString.toString("utf8"));
+            if (!this.authToken) {
+                this.emitError("Could not get authorization token, ask an admin to check the logs for more information.", true);
+                this.log(LogMode.Fatal, "Failed to get auth token.");
+                return await this.destroy();
+            }
+
+            this.log(LogMode.Success, "Successfully got authorization token from the server.");
 
             if (!await this.doJoin())
                 return;
