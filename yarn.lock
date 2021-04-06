@@ -75,13 +75,13 @@
   resolved "https://registry.yarnpkg.com/@sindresorhus/is/-/is-0.14.0.tgz#9fb3a3cf3132328151f353de4632e01e52102bea"
   integrity sha512-9NET910DNaIPngYnLLPeg+Ogzqsi9uM4mSboU5y6p8S5DzMTVEsJZrawi+BoDNUVBa2DhJqQYUFvMDfgU062LQ==
 
-"@skeldjs/client@^2.6.7":
-  version "2.6.7"
-  resolved "https://registry.yarnpkg.com/@skeldjs/client/-/client-2.6.7.tgz#af8ade8b5943461b4d4c3ceb08b5eb5a0503976c"
-  integrity sha512-ElN+FYILW8dcSIxdDk84ldHVSjopUrzH1yX8HTa1D+GY2vHnxctrqBGwCGdMPZ8B4vh/JzVUfKd8mJHNbkKb9w==
+"@skeldjs/client@^2.6.8":
+  version "2.6.8"
+  resolved "https://registry.yarnpkg.com/@skeldjs/client/-/client-2.6.8.tgz#cd995600e5ca03e2fb5de1c333dea1c4c79b4a6d"
+  integrity sha512-u8XQuIsLIrHoeB0agXIIbI12gpv6Crm/b0Sh+zNSCHj1xg58G4G8hseh4ltA2AIf7HGxJZACrtXw8+HimLIkSw==
   dependencies:
     "@skeldjs/constant" "^2.6.3"
-    "@skeldjs/core" "^2.6.6"
+    "@skeldjs/core" "^2.6.8"
     "@skeldjs/data" "^2.6.3"
     "@skeldjs/events" "^2.6.3"
     "@skeldjs/protocol" "^2.6.3"
@@ -94,10 +94,10 @@
   dependencies:
     "@skeldjs/util" "^2.6.3"
 
-"@skeldjs/core@^2.6.6":
-  version "2.6.6"
-  resolved "https://registry.yarnpkg.com/@skeldjs/core/-/core-2.6.6.tgz#a89c9dcfd0f790ac3b0a20b7a344498a1b78ae8d"
-  integrity sha512-pcP5hmV6uMWWVltN8uNUS7a+fxGi4e8ykfRxvOTRjFwrLc1kvHb9fpQUwn57I+Q4m5pJwa4xHbNSz4Rg62xyNQ==
+"@skeldjs/core@^2.6.8":
+  version "2.6.8"
+  resolved "https://registry.yarnpkg.com/@skeldjs/core/-/core-2.6.8.tgz#0815c6a85263843c9f2c028a15232c5e5b37d558"
+  integrity sha512-0Bmb/U+H2bTvpMFoles+Yj9uN52HSKELdiMffLRFi/ZKrp5uB9/i6+Fs3ssr26BaOSZHN/3DvkpI0lp5NupFVA==
   dependencies:
     "@skeldjs/constant" "^2.6.3"
     "@skeldjs/data" "^2.6.3"

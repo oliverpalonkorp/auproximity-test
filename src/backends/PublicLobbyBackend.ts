@@ -1,6 +1,5 @@
 import util from "util";
 import dns from "dns";
-import fs from "fs";
 import chalk from "chalk";
 import path from "path";
 import child_process from "child_process";
@@ -16,7 +15,8 @@ import {
     ColorID,
     TheSkeldVent,
     MiraHQVent,
-    PolusVent
+    PolusVent,
+    AirshipVent
 } from "@skeldjs/constant";
 
 import {
@@ -137,6 +137,9 @@ export default class PublicLobbyBackend extends BackendAdapter {
         const map = this.client.settings.map;
         const data = MapVentData[map][ventid];
 
+        if (!data)
+            return null;
+
         switch (map) {
             case MapID.TheSkeld:
                 return TheSkeldVent[data.id];
@@ -144,6 +147,8 @@ export default class PublicLobbyBackend extends BackendAdapter {
                 return MiraHQVent[data.id];
             case MapID.Polus:
                 return PolusVent[data.id];
+            case MapID.Airship:
+                return AirshipVent[data.id];
         }
 
         return null;
