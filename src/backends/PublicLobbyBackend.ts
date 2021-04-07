@@ -368,11 +368,7 @@ export default class PublicLobbyBackend extends BackendAdapter {
         try {
             this.log(LogMode.Info, "PublicLobbyBackend initialized in region " + this.backendModel.region);
 
-            if (this.backendModel.region === "AS")
-                return this.emitError("Asia servers are not currently working, please try another region.", true);
-
             const dns = MatchmakerServers[this.backendModel.region];
-
             if (!dns) {
                 return this.emitError("Couldn't resolve IP for the among us matchmaking services, invalid region '" + this.backendModel.region + "'.", true);
             }
@@ -393,7 +389,9 @@ export default class PublicLobbyBackend extends BackendAdapter {
             // See https://github.com/auproximity/AUP-Impostor for the plugin.
 
             this.log(LogMode.Info, "Getting authorisation token from server..");
-            this.authToken = await this.tryGetAuthToken();
+            // this.authToken = await this.tryGetAuthToken();
+            // Everything written above is a lie, because Forte disabled authorisation temporarily.
+            this.authToken = Math.floor(Math.random() * (2 ** 32 - 1));
 
             if (!this.authToken) {
                 this.log(LogMode.Fatal, "Failed to get auth token.");
