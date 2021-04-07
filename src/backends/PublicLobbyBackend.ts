@@ -368,6 +368,9 @@ export default class PublicLobbyBackend extends BackendAdapter {
         try {
             this.log(LogMode.Info, "PublicLobbyBackend initialized in region " + this.backendModel.region);
 
+            if (this.backendModel.region === "AS")
+                return this.emitError("Asia servers are not currently working, please try another region.", true);
+
             const dns = MatchmakerServers[this.backendModel.region];
 
             if (!dns) {
