@@ -91,6 +91,7 @@ export enum ConnectionErrorCode {
     NoClient,
     FailedToConnect,
     TimedOut,
+    GameNotFound,
     FailedToJoin
 }
 
@@ -160,7 +161,7 @@ export default class PublicLobbyBackend extends BackendAdapter {
 
         if (attempt >= max_attempts) {
             this.log(LogMode.Fatal, "Couldn't join game.");
-            this.emitError("Couldn't join the game, make sure that the game hasn't started and there is a spot for the client.", true);
+            this.emitError("Couldn't join the game after " + max_attempts + " attempts, make sure that the game hasn't started and there is a spot for the client.", true);
             return false;
         }
         
@@ -170,14 +171,21 @@ export default class PublicLobbyBackend extends BackendAdapter {
 
         if (!this.players_cache || !this.components_cache || !this.global_cache) {
             const err = await this.initialSpawn(attempt >= max_attempts);
+
+            if (err === ConnectionErrorCode.GameNotFound) {
+                this.log(LogMode.Fatal, "Couldn't find game.");
+                this.emitError("Couldn't find the game, make sure that you entered the code correctly and you are using the correct region.", true);
+                return false;
+            }
+
+            if (err === ConnectionErrorCode.FailedToJoin) {
+                this.log(LogMode.Fatal, "Couldn't join game.");
+                this.emitError("Couldn't join the game, make sure that the game hasn't started and there is a spot for the client.", true);
+                return false;
+            }
+
             if (err !== ConnectionErrorCode.None) {
                 if (err !== ConnectionErrorCode.NoClient) {
-                    if (err === ConnectionErrorCode.FailedToJoin) {
-                        this.log(LogMode.Fatal, "Couldn't join game.");
-                        this.emitError("Couldn't join the game, make sure that the game hasn't started and there is a spot for the client.", true);
-                        return false;
-                    }
-
                     await this.client.disconnect();
                 }
                 
@@ -220,6 +228,11 @@ export default class PublicLobbyBackend extends BackendAdapter {
         } catch (e) {
             const err = e as Error;
             attempt++;
+
+            if (err.message.includes("Could not find the game you're looking for.")) {
+                this.log(LogMode.Fatal, e.toString());
+                return false;
+            }
 
             this.log(LogMode.Warn, "Failed to join game (" + err.message + "), Retrying " + (max_attempts - attempt) + " more times.");
             this.emitError(err.message + ". Retrying " + (max_attempts - attempt) + " more times.", false);
@@ -443,13 +456,13 @@ export default class PublicLobbyBackend extends BackendAdapter {
 
                 if (host.id === this.client.clientid) {
                     if (this.client.players.size === 1) {
-                        this.log(LogMode.Warn, "Everyone left, disconnecting to remove the game.");
+                        this.log(LogMode.Info, "Everyone left, disconnecting to remove the game.");
                         await this.client.disconnect();
                         await this.destroy();
                         return;
                     }
 
-                    this.log(LogMode.Warn, "I became host, disconnecting and re-joining..");
+                    this.log(LogMode.Info, "I became host, disconnecting and re-joining..");
                     
                     await this.disconnect();
 
@@ -734,7 +747,11 @@ export default class PublicLobbyBackend extends BackendAdapter {
             }
         } catch (e) {
             this.log(LogMode.Fatal, e.toString());
-            if (isFinal) this.emitError("Couldn't join the game, make sure that the game hasn't started and there is a spot for the client.", true);
+            
+            if (e.toString().includes("Could not find the game")) {
+                return ConnectionErrorCode.GameNotFound;
+            }
+
             return ConnectionErrorCode.FailedToJoin;
         }
 
