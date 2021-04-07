@@ -356,8 +356,17 @@ export default class PublicLobbyBackend extends BackendAdapter {
             this.log(LogMode.Info, "PublicLobbyBackend initialized in region " + this.backendModel.region);
 
             const dns = MatchmakerServers[this.backendModel.region];
-            this.master = await this.resolveMMDNS(this.backendModel.region, dns);
 
+            if (!dns) {
+                return this.emitError("Couldn't resolve IP for the among us matchmaking services, invalid region '" + this.backendModel.region + "'.", true);
+            }
+
+            try {
+                this.master = await this.resolveMMDNS(this.backendModel.region, dns);
+            } catch (e) {
+                this.log(LogMode.Error, e);
+                return this.emitError("Couldn't resolve IP for the among us matchmaking services, ask an admin to check the logs for more information.", true);
+            }
             this.server = ~~(Math.random() * this.master.length);
 
             // TODO: Implement actual getting-auth-token (probably in skeldjs).
@@ -371,9 +380,8 @@ export default class PublicLobbyBackend extends BackendAdapter {
             this.authToken = await this.tryGetAuthToken();
 
             if (!this.authToken) {
-                this.emitError("Could not get authorization token, ask an admin to check the logs for more information.", true);
                 this.log(LogMode.Fatal, "Failed to get auth token.");
-                return await this.destroy();
+                return this.emitError("Could not get authorization token, ask an admin to check the logs for more information.", true);
             }
 
             this.log(LogMode.Success, "Successfully got authorization token from the server.");
