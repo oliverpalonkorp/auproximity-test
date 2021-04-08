@@ -5,6 +5,8 @@ export interface HostOptions {
     falloffVision: boolean;
     colliders: boolean;
     paSystems: boolean;
+    commsSabotage: boolean;
+    meetingsCommsSabotage: boolean;
 }
 
 export interface GameSettings {

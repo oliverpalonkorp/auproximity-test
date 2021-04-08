@@ -43,6 +43,7 @@ export const CameraPositions = {
       y: -15.6
     }
   ],
+  [MapID.AprilFoolsTheSkeld]: [],
   [MapID.Airship]: []
 }
 

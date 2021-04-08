@@ -17,9 +17,9 @@
   },
   "dependencies": {
     "@microsoft/signalr": "^5.0.0",
-    "@skeldjs/client": "^2.6.9",
+    "@skeldjs/client": "^2.6.10",
     "@skeldjs/constant": "^2.6.3",
-    "@skeldjs/core": "^2.6.9",
+    "@skeldjs/core": "^2.6.10",
     "@skeldjs/protocol": "^2.6.9",
     "@skeldjs/text": "^2.6.3",
     "@skeldjs/util": "^2.6.3",

@@ -42,7 +42,9 @@ export default class Room {
         falloff: 4.5,
         falloffVision: false,
         colliders: false,
-        paSystems: true
+        paSystems: true,
+        commsSabotage: true,
+        meetingsCommsSabotage: true
     };
     settings: GameSettings = {
         crewmateVision: 1,
@@ -93,13 +95,9 @@ export default class Room {
         this.backendAdapter.on(BackendEvent.HostChange, async (payload: { name: string }) => {
             this.hostname = payload.name;
 
-            const client = this.getClientByName(payload.name);
-
-            if (client) {
-                this.clients.forEach(c => {
-                    c.setHost(client.uuid);
-                });
-            }
+            this.clients.forEach(c => {
+                c.setHost(this.hostname);
+            });
         });
 
         this.backendAdapter.on(BackendEvent.GameState, async (payload: { state: GameState }) => {
@@ -110,6 +108,8 @@ export default class Room {
                     player.flags = PlayerFlag.None;
                 }
             }
+
+            console.log(GameState[payload.state]);
 
             this.clients.forEach(c => {
                 c.setGameState(this.state);
@@ -189,7 +189,7 @@ export default class Room {
     }
 
     getClientByName(name: string): Client|undefined {
-        return this.clients.find(client => client.name.toLowerCase() === name.toLowerCase());
+        return this.clients.find(client => client.name?.toLowerCase() === name.toLowerCase());
     }
 
     addClient(client: Client): void {
@@ -219,10 +219,11 @@ export default class Room {
 
         client.setPositionOf(client.uuid, player.position);
         client.setColorOf(client.uuid, player.color);
-        client.setHost(this.hostname);
         client.setGameState(this.state);
         client.setGameFlags(this.flags);
         client.setSettings(this.settings);
+        
+        client.setHost(this.hostname);
 
         client.setOptions(this.options);
     }

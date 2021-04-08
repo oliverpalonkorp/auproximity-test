@@ -80,7 +80,7 @@ export default class Client implements ClientBase {
 
         this.name = name;
 
-        if (state.isClosed) {
+        if (state.isClosing) {
             await this.sendError("AUProximity is currently undergoing maintenence.", true);
             return;
         }
@@ -152,8 +152,8 @@ export default class Client implements ClientBase {
         this.socket.emit(ClientSocketEvents.SetColorOf, { uuid, color });
     }
 
-    setHost(uuid: string): void {
-        this.socket.emit(ClientSocketEvents.SetHost, { uuid });
+    setHost(name: string): void {
+        this.socket.emit(ClientSocketEvents.SetHost, { name });
     }
 
     setOptions(options: HostOptions): void {

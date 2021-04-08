@@ -64,6 +64,7 @@ import ClientListItem from '@/components/ClientListItem.vue'
 import MyClientListItem from '@/components/MyClientListItem.vue'
 import { GameFlag, GameState, GameSettings } from '@/models/RoomModel'
 import { getClosestCamera } from '@/lib/CameraPositions'
+import { HostOptions } from '../../../src/types/models/ClientOptions'
 
 const AudioContext = window.AudioContext || // Default
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -360,6 +361,10 @@ export default class ServerDisplayer extends Vue {
             s.pannerNode.setPosition(0, 0, 0)
           })
         }
+      } else {
+        this.remoteStreams.forEach(s => {
+          this.recalcVolumeForRemoteStream(s)
+        })
       }
     }
   }
@@ -368,9 +373,24 @@ export default class ServerDisplayer extends Vue {
   onSetGameState (payload: {state: GameState}) {
     switch (payload.state) {
       case GameState.Meeting:
+        if (this.$store.state.gameFlags & GameFlag.CommsSabotaged) {
+          if (this.$store.state.options.meetingsCommsSabotage) {
+            this.remoteStreams.forEach(s => {
+              s.gainNode.gain.value = 0
+              s.pannerNode.setPosition(0, 0, 0)
+            })
+            return
+          }
+        }
+
         this.remoteStreams.forEach(s => {
           s.gainNode.gain.value = 1
           s.pannerNode.setPosition(0, 0, 0)
+        })
+        break
+      case GameState.Game:
+        this.remoteStreams.forEach(s => {
+          this.recalcVolumeForRemoteStream(s)
         })
         break
     }
@@ -396,6 +416,13 @@ export default class ServerDisplayer extends Vue {
     this.settings = payload.settings
   }
 
+  @Socket(ClientSocketEvents.SetOptions)
+  onSetOptions (payload: { options: HostOptions }) {
+    this.remoteStreams.forEach(s => {
+      this.recalcVolumeForRemoteStream(s)
+    })
+  }
+
   recalcVolumeForRemoteStream (stream: { uuid: string; gainNode: GainNode; pannerNode: PannerNode }) {
     const myFlags = this.$store.state.me.flags
     const gameFlags = this.$store.state.gameFlags
@@ -408,7 +435,12 @@ export default class ServerDisplayer extends Vue {
       return
     }
 
-    if (!(myFlags & PlayerFlag.IsDead) && (gameFlags & GameFlag.CommsSabotaged)) {
+    if (
+      !(myFlags & PlayerFlag.IsDead) && // Only if I'm not dead.
+      (gameFlags & GameFlag.CommsSabotaged) && // Only if communications are sabotaged.
+      this.$store.state.options.commsSabotage && // Only if comms sabotage should stop voice.
+      (this.$store.state.gameState !== GameState.Meeting || this.$store.state.options.meetingsCommsSabotage) // Only if there's no meeting & you should be able to hear people in meetings
+    ) {
       stream.gainNode.gain.value = 0
       stream.pannerNode.setPosition(0, 0, 0)
       return
@@ -438,6 +470,7 @@ export default class ServerDisplayer extends Vue {
       stream.gainNode.gain.value = 0
       stream.pannerNode.setPosition(0, 0, 0)
     } else {
+      console.log(this.lerp(this.hypotPose(p1, p2)))
       stream.gainNode.gain.value = this.lerp(this.hypotPose(p1, p2))
       stream.pannerNode.setPosition(p2.x - p1.x, p2.y - p1.y, 1)
     }

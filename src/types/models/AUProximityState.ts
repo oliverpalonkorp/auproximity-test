@@ -4,5 +4,5 @@ import Room from "../../Room";
 export interface AUProximityState {
     allClients: Client[];
     allRooms: Room[];
-    isClosed: boolean;
+    isClosing: boolean;
 }

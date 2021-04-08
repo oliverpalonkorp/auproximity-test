@@ -12,7 +12,7 @@
           v-bind="attrs"
           v-on="on"
           v-model="$store.state.options.falloff"
-          :readonly="$store.state.host !== $store.state.me.uuid"
+          :readonly="!amhost"
           :disabled="$store.state.options.falloffVision || !$store.state.joinedRoom"
           @change="updateOptions"
         >
@@ -25,7 +25,7 @@
               min="2.5"
               max="10"
               step="0.1"
-              :readonly="$store.state.host !== $store.state.me.uuid"
+              :readonly="!amhost"
               :disabled="$store.state.options.falloffVision || !$store.state.joinedRoom"
               @change="updateOptions"
             ></v-text-field>
@@ -34,21 +34,35 @@
         <v-checkbox
           label="Only hear people in vision"
           v-model="$store.state.options.falloffVision"
-          :readonly="$store.state.host !== $store.state.me.uuid"
+          :readonly="!amhost"
           :disabled="!$store.state.joinedRoom"
           @change="updateOptions"
         ></v-checkbox>
         <!--<v-checkbox
           label="Walls block voice"
           v-model="$store.state.options.colliders"
-          :readonly="$store.state.host !== $store.state.me.uuid"
+          :readonly="!amhost"
           :disabled="!$store.state.joinedRoom"
           @change="updateOptions"
         ></v-checkbox>-->
         <v-checkbox
+          label="Comms Sabotage"
+          v-model="$store.state.options.commsSabotage"
+          :readonly="!amhost"
+          :disabled="!$store.state.joinedRoom"
+          @change="updateOptions"
+        ></v-checkbox>
+        <v-checkbox
+          label="Comms Sabotage in Meetings"
+          v-model="$store.state.options.meetingsCommsSabotage"
+          :readonly="!amhost"
+          :disabled="!$store.state.joinedRoom"
+          @change="updateOptions"
+        ></v-checkbox>
+        <v-checkbox
           label="Hear through cameras"
           v-model="$store.state.options.paSystems"
-          :readonly="$store.state.host !== $store.state.me.uuid"
+          :readonly="!amhost"
           :disabled="!$store.state.joinedRoom"
           @change="updateOptions"
         ></v-checkbox>
@@ -86,6 +100,10 @@ export default class ClientOptions extends Vue {
   @Socket(ClientSocketEvents.SetOptions)
   onSetOptions (payload: { options: HostOptions }) {
     this.$store.state.options = payload.options
+  }
+
+  get amhost () {
+    return this.$store.state.host && this.$store.state.host.toLowerCase() === this.$store.state.me.name.toLowerCase()
   }
 }
 </script>

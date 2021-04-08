@@ -112,8 +112,6 @@ export default class PublicLobbyBackend extends BackendAdapter {
     components_cache: Map<number, Networkable>;
     global_cache: Networkable[];
 
-    didDisconnect: boolean;
-
     settings: GameSettings;
 
     constructor(backendModel: PublicLobbyBackendModel) {
@@ -121,7 +119,6 @@ export default class PublicLobbyBackend extends BackendAdapter {
         
         this.backendModel = backendModel;
         this.gameID = this.backendModel.gameCode;
-        this.didDisconnect = false;
         this.settings = {
             map: MapID.TheSkeld,
             crewmateVision: 1
@@ -239,6 +236,7 @@ export default class PublicLobbyBackend extends BackendAdapter {
             return await this.doJoin(max_attempts, attempt);
         }
         
+        this.log(LogMode.Success, "Successfully joined!");
         this.log(LogMode.Info, "Replacing state with cached state.. (%i objects, %i netobjects, %i room components)", this.players_cache.size, this.components_cache.size, this.global_cache.length);
 
         for (const [ id, object ] of this.players_cache) {
@@ -277,13 +275,18 @@ export default class PublicLobbyBackend extends BackendAdapter {
         return true;
     }
 
-    async disconnect(): Promise<void> {
+    resetObjectCaches(): void {
+        if (!this.client)
+            return;
+
         this.players_cache = new Map([...this.client.objects.entries()].filter(([ objectid ]) => objectid !== this.client.clientid && objectid > 0 /* not global */)) as Map<number, PlayerData>;
         this.components_cache = new Map([...this.client.netobjects.entries()].filter(([ , component ]) => component.ownerid !== this.client.clientid));
         this.global_cache = this.client.components;
+    }
 
+    async disconnect(): Promise<void> {
+        this.resetObjectCaches();
         await this.client.disconnect();
-        this.didDisconnect = true;
     }
 
     async resolveMMDNS(region: string, names: string[]): Promise<RegionServers> {
@@ -413,6 +416,7 @@ export default class PublicLobbyBackend extends BackendAdapter {
                 const { player, position } = ev.data;
 
                 if (player.data) {
+                    console.log(player.data.name, position);
                     this.emitPlayerPosition(player.data.name, position);
                 }
             });
@@ -443,7 +447,14 @@ export default class PublicLobbyBackend extends BackendAdapter {
 
             this.client.on("game.end", async () => {
                 this.emitGameState(GameState.Lobby);
-                this.log(LogMode.Info, "Game ended, re-joining..");
+                this.log(LogMode.Info, "Game ended, clearing cache & re-joining..");
+
+                await this.disconnect();
+                this.players_cache = null;
+                this.components_cache = null;
+                this.global_cache = null;
+
+                await sleep(500);
                 
                 if (!await this.doJoin())
                     return;
@@ -578,13 +589,21 @@ export default class PublicLobbyBackend extends BackendAdapter {
                 }
             });
 
-            this.client.on("meetinghud.votingcomplete", ev => {
+            this.client.on("meetinghud.votingcomplete", async ev => {
                 const { ejected } = ev.data;
-                if (ejected && ejected.data) {
-                    this.emitGameState(GameState.Game);
-                    this.emitPlayerFlags(ejected.data.name, PlayerFlag.IsDead, true);
-                    this.log(LogMode.Log, ejected.data.name + " (" + ejected.id + ") was voted off");
+                this.log(LogMode.Info, "Meeting ended.");
+                if (ejected) {
+                    if (ejected.data) {
+                        this.emitPlayerFlags(ejected.data.name, PlayerFlag.IsDead, true);
+                        this.log(LogMode.Log, ejected.data.name + " (" + ejected.id + ") was voted off");
+                    } else {
+                        this.log(LogMode.Warn, "Someone was voted off, but there was no data for them.");
+                    }
+                } else {
+                    this.log(LogMode.Info, "No one was voted off.");
                 }
+                await sleep(7000);
+                this.emitGameState(GameState.Game);
             });
 
             this.client.on("player.murder", ev => {
@@ -658,6 +677,16 @@ export default class PublicLobbyBackend extends BackendAdapter {
                 } else {
                     this.log(LogMode.Warn, "Someone went off cameras, but there was no data.");
                 }
+            });
+
+            this.client.on("component.spawn", () => {
+                this.log(LogMode.Log, "Component was spawned, resetting object cache.");
+                this.resetObjectCaches();
+            });
+
+            this.client.on("component.despawn", () => {
+                this.log(LogMode.Log, "Component was despawned, resetting object cache.");
+                this.resetObjectCaches();
             });
 
             this.log(LogMode.Success, "Initialized PublicLobbyBackend!");

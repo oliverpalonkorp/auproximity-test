@@ -31,9 +31,6 @@ Follow the steps below to run a server and webui with hot-reload
 - In production, the webui should be served from the same origin as the server. The server 
   should also have an ssl reverse proxy in front of it, like nginx, or on a PaaS like Heroku.
 
-> Note: The `heroku-postbuild` script is for Heroku deployment only.
-> Do NOT use it for development or production testing, as it WILL break.
-
 ## Selfhosting - Heroku
 [![Deploy](https://www.herokucdn.com/deploy/button.svg)](https://heroku.com/deploy)
 

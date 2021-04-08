@@ -40,7 +40,9 @@ const state: State = {
     falloff: 4.5,
     falloffVision: false,
     colliders: false,
-    paSystems: true
+    paSystems: true,
+    commsSabotage: true,
+    meetingsCommsSabotage: true
   },
   clientOptions: {
     omniscientGhosts: false
@@ -101,8 +103,8 @@ export default new Vuex.Store({
       state.me.name = payload.name
       state.backendModel = payload.backendModel
     },
-    setHost (state: State, payload: { uuid: string }) {
-      state.host = payload.uuid
+    setHost (state: State, payload: { name: string }) {
+      state.host = payload.name
     },
     setOptions (state: State, payload: { options: HostOptions }) {
       state.options = payload.options
@@ -172,8 +174,8 @@ export default new Vuex.Store({
         commit('setColorOf', { uuid: payload.uuid, color: payload.color })
       }
     },
-    [`socket_${ClientSocketEvents.SetHost}`] ({ commit }, payload: { uuid: string }) {
-      commit('setHost', { uuid: payload.uuid })
+    [`socket_${ClientSocketEvents.SetHost}`] ({ commit }, payload: { name: string }) {
+      commit('setHost', { name: payload.name })
     },
     [`socket_${ClientSocketEvents.SetOptions}`] ({ commit }, payload: { options: HostOptions }) {
       commit('setOptions', { options: payload.options })

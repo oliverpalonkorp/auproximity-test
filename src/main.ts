@@ -39,7 +39,7 @@ app.use("/peerjs", ExpressPeerServer({
 export const state: AUProximityState = {
     allClients: [],
     allRooms: [],
-    isClosed: false
+    isClosing: false
 };
 
 io.on("connection", (socket: Socket) => {
@@ -59,9 +59,13 @@ server.listen(port, () => {
 });
 
 async function gracefulShutdown() {
+    if (state.isClosing)
+        return;
+
+    state.isClosing = true;
+
     logger.info("Shutting down gracefully..");
     logger.info("Waiting for all rooms (" + state.allRooms.length + ") currently playing to finish. Press Ctrl + C to exit immediately.");
-    state.isClosed = true;
     await Promise.allSettled(
         state.allRooms.map(room => room.gracefulDestroy()),
     );
