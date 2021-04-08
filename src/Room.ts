@@ -109,8 +109,6 @@ export default class Room {
                 }
             }
 
-            console.log(GameState[payload.state]);
-
             this.clients.forEach(c => {
                 c.setGameState(this.state);
                 for (const [ name, player ] of this.players) {
