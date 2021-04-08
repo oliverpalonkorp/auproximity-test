@@ -416,7 +416,6 @@ export default class PublicLobbyBackend extends BackendAdapter {
                 const { player, position } = ev.data;
 
                 if (player.data) {
-                    console.log(player.data.name, position);
                     this.emitPlayerPosition(player.data.name, position);
                 }
             });
