@@ -1,3 +1,4 @@
+import "dotenv/config";
 import socketio, { Socket } from "socket.io";
 
 import { ExpressPeerServer } from "peer";
@@ -7,6 +8,7 @@ import express from "express";
 import http from "http";
 import path from "path";
 import sslRedirect from "heroku-ssl-redirect";
+import * as Sentry from "@sentry/node";
 
 import { AUProximityState } from "./types/models/AUProximityState";
 
@@ -14,6 +16,14 @@ import Client from "./Client";
 import logger from "./util/logger";
 
 const app = express();
+
+if (typeof process.env.SENTRY_DSN !== "undefined") {
+    logger.log("Activating Sentry error logging integration");
+    Sentry.init({ dsn: process.env.SENTRY_DSN });
+    app.use(Sentry.Handlers.requestHandler());
+} else {
+    logger.log("Skipping Sentry error logging integration");
+}
 
 app.use(sslRedirect());
 app.use(express.static(path.join(__dirname, "dist")));
@@ -52,6 +62,10 @@ io.on("connection", (socket: Socket) => {
 app.all("*", (req, res) => {
     res.sendFile(path.join(__dirname, "dist", "index.html"));
 });
+
+if (typeof process.env.SENTRY_DSN !== "undefined") {
+    app.use(Sentry.Handlers.errorHandler());
+}
 
 const port = process.env.PORT || 8079;
 server.listen(port, () => {
