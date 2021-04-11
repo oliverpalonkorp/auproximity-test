@@ -140,7 +140,17 @@ export default class ServerDisplayer extends Vue {
    */
   async setupMyStream () {
     if (!this.$store.state.mic.volumeNode) {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
+      let stream: MediaStream
+      try {
+        stream = await navigator.mediaDevices.getUserMedia({ audio: true })
+      } catch (e) {
+        if (e.name === 'NotAllowedError') {
+          this.showSnackbar = true
+          this.snackbarMessage = 'Please enable access to your microphone.'
+        }
+        this.$store.state.micAllowed = false
+        return
+      }
       const ctx = new AudioContext()
       const src = ctx.createMediaStreamSource(stream)
       const analyzerNode = ctx.createAnalyser()
@@ -417,7 +427,7 @@ export default class ServerDisplayer extends Vue {
   }
 
   @Socket(ClientSocketEvents.SetOptions)
-  onSetOptions (payload: { options: HostOptions }) {
+  onSetOptions () {
     this.remoteStreams.forEach(s => {
       this.recalcVolumeForRemoteStream(s)
     })
@@ -470,7 +480,6 @@ export default class ServerDisplayer extends Vue {
       stream.gainNode.gain.value = 0
       stream.pannerNode.setPosition(0, 0, 0)
     } else {
-      console.log(this.lerp(this.hypotPose(p1, p2)))
       stream.gainNode.gain.value = this.lerp(this.hypotPose(p1, p2))
       stream.pannerNode.setPosition(p2.x - p1.x, p2.y - p1.y, 1)
     }

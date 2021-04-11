@@ -14,17 +14,20 @@
               (HOST)
             </span>
           </span>
-          <span class="float-right" v-if="mic.volumeNode !== undefined">
+          <span class="float-right" v-if="mic.volumeNode">
             <span class="px-3">Connected</span>
           </span>
-          <span class="float-right" v-else>
+          <span class="float-right" v-else-if="$store.state.micAllowed">
             <span class="px-3">Disconnected</span>
+          </span>
+          <span class="float-right" v-else>
+            <span class="px-3">Mic Blocked</span>
           </span>
         </v-list-item-title>
       </v-list-item-content>
     </template>
     <v-slider
-      v-if="mic.volumeNode !== undefined"
+      v-if="mic.volumeNode"
       thumb-label
       v-model="streamVolume"
       track-color="grey"

@@ -5,6 +5,7 @@ import path from "path";
 import child_process from "child_process";
 
 import { SkeldjsClient } from "@skeldjs/client";
+import * as amongus from "@skeldjs/constant";
 import * as text from "@skeldjs/text";
 
 const tb = text.tb;
@@ -46,42 +47,39 @@ import { MatchmakerServers } from "../types/constants/MatchmakerServers";
 import { GameState } from "../types/enums/GameState";
 import { GameFlag } from "../types/enums/GameFlags";
 
+// ~~Using integer for now, version parsing isn't working on SkeldJS with 2020.3.5.0 for some reason.~~
+// I'm keeping this comment here because it shows how stupid I am that it is in fact 2021 and not 2020.
 const GAME_VERSION = "2021.3.25.0";
 
-// Using integer for now, version parsing isn't working on SkeldJS with 2020.3.5.0 for some reason.
-// I'm keeping this comment here because it shows how stupid I am that it is in fact 2021 and not 2020.
-
-/*
 const colours = {
-    red: chalk.redBright,
-    blue: chalk.blue,
-    green: chalk.green,
-    pink: chalk.magentaBright,
-    orange: chalk.yellow,
-    yellow: chalk.yellowBright,
-    grey: chalk.grey,
-    white: chalk.white,
-    purple: chalk.magenta,
-    brown: chalk.red,
-    cyan: chalk.cyan,
-    lime: chalk.greenBright
+    [amongus.ColorID.Red]: chalk.redBright,
+    [amongus.ColorID.Blue]: chalk.blue,
+    [amongus.ColorID.DarkGreen]: chalk.green,
+    [amongus.ColorID.Pink]: chalk.magentaBright,
+    [amongus.ColorID.Orange]: chalk.yellowBright,
+    [amongus.ColorID.Yellow]: chalk.yellow,
+    [amongus.ColorID.Black]: chalk.grey,
+    [amongus.ColorID.White]: chalk.white,
+    [amongus.ColorID.Purple]: chalk.magenta,
+    [amongus.ColorID.Brown]: chalk.red,
+    [amongus.ColorID.Cyan]: chalk.cyan,
+    [amongus.ColorID.Lime]: chalk.greenBright
 };
 
 
-const fmtName = (player: PlayerData) => {
+function fmtName(player: PlayerData) {
     if (!player)
-        return chalk.grey("No Data");
+        return chalk.grey("<No Data>");
 
     const has_data = !!player.data;
     const colour = has_data ? player.data.color : "grey";
-    const name = has_data ? player.data.name || "No Name" : "No Data";
-    const id = player.id || "No ID";
+    const name = has_data ? player.data.name || "<No Name>" : "<No Data>";
+    const id = player.id || "<No ID>";
 
-    const consoleClr: chalk.Chalk = colours[colour] || colours.grey;
+    const consoleClr: chalk.Chalk = colours[colour] || colours[amongus.ColorID.Black];
 
-    return consoleClr(name) + " (" + chalk.grey(player.id) + ")";
-};
-*/
+    return consoleClr(name) + " " + chalk.grey("(" + id + ")");
+}
 
 const sleep = ms => new Promise<void>(resolve => setTimeout(resolve, ms));
 const lookupDns = util.promisify(dns.lookup);
@@ -219,6 +217,8 @@ export default class PublicLobbyBackend extends BackendAdapter {
             this.emitError("Couldn't connect to the server. Retrying " + (max_attempts - attempt) + " more times.", false);
             return await this.doJoin(max_attempts, attempt);
         }
+        
+        this.log(LogMode.Info, "Successfully connected to server.");
 
         try {
             await this.client.joinGame(this.backendModel.gameCode, false);
@@ -268,7 +268,7 @@ export default class PublicLobbyBackend extends BackendAdapter {
         this.log(LogMode.Success, "Joined & successfully replaced state!");
 
         if (this.client.host && this.client.host.data) {
-            this.log(LogMode.Success, "Found host: " + this.client.host.data.name);
+            this.log(LogMode.Success, "Found host: " + fmtName(this.client.host));
 
             this.emitHostChange(this.client.host.data.name);
         }
@@ -424,7 +424,7 @@ export default class PublicLobbyBackend extends BackendAdapter {
                 const { player, position } = ev.data;
 
                 if (player.data) {
-                    this.log(LogMode.Log, "Got SnapTo for " + player.data.name + " (" + player.id + ") to x: " + position.x + " y: " + position.y);
+                    this.log(LogMode.Log, "Got SnapTo for", fmtName(player), "to x: " + position.x + " y: " + position.y);
                     this.emitPlayerPosition(player.data.name, position);
                 } else {
                     this.log(LogMode.Warn, "Got snapto, but there was no data.");
@@ -434,8 +434,8 @@ export default class PublicLobbyBackend extends BackendAdapter {
             this.client.on("player.setstartcounter", ev => {
                 const { counter } = ev.data;
 
-                if (counter <= 5 && counter > 0) {
-                    this.log(LogMode.Info, "Game is starting in " + counter + " second" + (counter === 1 ? "" : "s"));
+                if (counter === 5) {
+                    this.log(LogMode.Info, "Game is starting in 5 seconds");
                 }
             });
 
@@ -449,10 +449,6 @@ export default class PublicLobbyBackend extends BackendAdapter {
                 this.log(LogMode.Info, "Game ended, clearing cache & re-joining..");
 
                 await this.disconnect();
-                this.players_cache = null;
-                this.components_cache = null;
-                this.global_cache = null;
-
                 await sleep(500);
                 
                 if (!await this.doJoin())
@@ -483,7 +479,7 @@ export default class PublicLobbyBackend extends BackendAdapter {
                 }
 
                 if (host && host.data) {
-                    this.log(LogMode.Info, host.data.name + " is now the host.");
+                    this.log(LogMode.Info, fmtName(host), " is now the host.");
                     this.emitHostChange(host.data.name);
                 } else {
                     this.log(LogMode.Warn, "Host changed, but there was no data.");
@@ -534,9 +530,9 @@ export default class PublicLobbyBackend extends BackendAdapter {
             });
 
             this.client.on("player.setname", ev => {
-                const { player, name } = ev.data;
+                const { player } = ev.data;
                 if (player.data) {
-                    this.log(LogMode.Info, player.id + " set their name to " + name + ".");
+                    this.log(LogMode.Info, fmtName(player), "updated their name.");
                 } else {
                     if (player) {
                         this.log(LogMode.Warn, "Name was set for " + player.id + ", but there was no data.");
@@ -549,7 +545,7 @@ export default class PublicLobbyBackend extends BackendAdapter {
             this.client.on("player.setcolor", ev => {
                 const { player, color } = ev.data;
                 if (player?.data) {
-                    this.log(LogMode.Info, player.data.name + " set their colour to " + ColorID[color] + ".");
+                    this.log(LogMode.Info, fmtName(player), "set their colour to " + ColorID[color] + ".");
                     this.emitPlayerColor(player.data.name, color);
                 } else {
                     if (player) {
@@ -573,15 +569,7 @@ export default class PublicLobbyBackend extends BackendAdapter {
                     if (state) {
                         const player = this.client.getPlayerByPlayerId(state.playerId);
                         
-                        if (player) {
-                            if (player.data) {
-                                this.log(LogMode.Log, player.data.name + " (" + player.id + ") called a meeting.");
-                            } else {
-                                this.log(LogMode.Warn, "A player with ID " + player.id + " called a meeting, but there was no data.");
-                            }
-                        } else {
-                            this.log(LogMode.Warn, "Someone called a meeting, but there was no data for the reporter.");
-                        }
+                        this.log(LogMode.Log, fmtName(player), "called a meeting.");
                     } else {
                         this.log(LogMode.Warn, "Someone called a meeting, but there was no data for the reporter.");
                     }
@@ -594,7 +582,7 @@ export default class PublicLobbyBackend extends BackendAdapter {
                 if (ejected) {
                     if (ejected.data) {
                         this.emitPlayerFlags(ejected.data.name, PlayerFlag.IsDead, true);
-                        this.log(LogMode.Log, ejected.data.name + " (" + ejected.id + ") was voted off");
+                        this.log(LogMode.Log, fmtName(ejected), "was voted off");
                     } else {
                         this.log(LogMode.Warn, "Someone was voted off, but there was no data for them.");
                     }
@@ -606,9 +594,9 @@ export default class PublicLobbyBackend extends BackendAdapter {
             });
 
             this.client.on("player.murder", ev => {
-                const { victim } = ev.data;
+                const { player, victim } = ev.data;
                 if (victim && victim.data) {
-                    this.log(LogMode.Info, victim.data.name + " (" + victim.id + ") was murdered.");
+                    this.log(LogMode.Info, fmtName(player), "murdered", fmtName(victim) + ".");
                     this.emitPlayerFlags(victim.data.name, PlayerFlag.IsDead, true);
                 } else {
                     this.log(LogMode.Warn, "Someone got murdered, but there was no data.");
@@ -618,7 +606,7 @@ export default class PublicLobbyBackend extends BackendAdapter {
             this.client.on("player.entervent", ev => {
                 const { player, ventid } = ev.data;
                 if (player && player.data) {
-                    this.log(LogMode.Log, player.data.name + " (" + player.id + ") entered vent '" + this.getVentName(ventid) + "'.");
+                    this.log(LogMode.Log, fmtName(player), "entered vent '" + this.getVentName(ventid) + ".");
                     this.emitPlayerFlags(player.data.name, PlayerFlag.InVent, true);
                 } else {
                     this.log(LogMode.Warn, "Someone entered a vent, but there was no data.");
@@ -628,7 +616,7 @@ export default class PublicLobbyBackend extends BackendAdapter {
             this.client.on("player.exitvent", ev => {
                 const { player, ventid } = ev.data;
                 if (player && player.data) {
-                    this.log(LogMode.Log, player.data.name + " (" + player.id + ") exited vent '" + this.getVentName(ventid) + "'.");
+                    this.log(LogMode.Log, fmtName(player), "exited vent '" + this.getVentName(ventid) + ".");
                     this.emitPlayerFlags(player.data.name, PlayerFlag.InVent, true);
                 } else {
                     this.log(LogMode.Warn, "Someone exited a vent, but there was no data.");
@@ -640,7 +628,7 @@ export default class PublicLobbyBackend extends BackendAdapter {
                 for (let i = 0; i < impostors.length; i++) {
                     const player = impostors[i];
                     if (player?.data) {
-                        this.log(LogMode.Info, player.data.name + " was made impostor.");
+                        this.log(LogMode.Info, fmtName(player), "was made impostor.");
                         this.emitPlayerFlags(player.data.name, PlayerFlag.IsImpostor, true);
                     } else {
                         this.log(LogMode.Warn, "Someone was made impostor, but there was no data.");
@@ -650,10 +638,10 @@ export default class PublicLobbyBackend extends BackendAdapter {
 
             this.client.on("gamedata.removeplayer", ev => {
                 const { playerData } = ev.data;
-                const client = this.client.getPlayerByPlayerId(playerData.playerId);
+                const player = this.client.getPlayerByPlayerId(playerData.playerId);
 
                 if (playerData) {
-                    this.log(LogMode.Info, "Removed " + playerData.name + (client ? " (" + client.id + ")" : ""));
+                    this.log(LogMode.Info, "Removed", fmtName(player));
                     this.emitPlayerColor(playerData.name, -1);
                 }
             });
@@ -661,7 +649,7 @@ export default class PublicLobbyBackend extends BackendAdapter {
             this.client.on("security.cameras.join", ev => {
                 const { player } = ev.data;
                 if (player?.data) {
-                    this.log(LogMode.Info, player.data.name + " (" + player.id + ") went onto cameras.");
+                    this.log(LogMode.Info, fmtName(player), "went onto cameras.");
                     this.emitPlayerFlags(player.data.name, PlayerFlag.OnCams, true);
                 } else {
                     this.log(LogMode.Warn, "Someone went onto cameras, but there was no data.");
@@ -671,7 +659,7 @@ export default class PublicLobbyBackend extends BackendAdapter {
             this.client.on("security.cameras.leave", ev => {
                 const { player } = ev.data;
                 if (player?.data) {
-                    this.log(LogMode.Info, player.data.name + " (" + player.id + ") went off cameras.");
+                    this.log(LogMode.Info, fmtName(player), "went off cameras.");
                     this.emitPlayerFlags(player.data.name, PlayerFlag.OnCams, false);
                 } else {
                     this.log(LogMode.Warn, "Someone went off cameras, but there was no data.");
@@ -679,13 +667,26 @@ export default class PublicLobbyBackend extends BackendAdapter {
             });
 
             this.client.on("component.spawn", () => {
-                this.log(LogMode.Log, "Component was spawned, resetting object cache.");
+                // this.log(LogMode.Log, "Component was spawned, resetting object cache.");
                 this.resetObjectCaches();
             });
 
             this.client.on("component.despawn", () => {
-                this.log(LogMode.Log, "Component was despawned, resetting object cache.");
+                // this.log(LogMode.Log, "Component was despawned, resetting object cache.");
                 this.resetObjectCaches();
+            });
+
+            this.client.on("player.move", ev => {
+                const { player, position } = ev.data;
+                
+                if (process.env.NODE_ENV === "production")
+                    return;
+
+                if (player?.data) {
+                    this.log(LogMode.Log, fmtName(player), "moved to X: " + position.x + ", Y: " + position.y);
+                } else {
+                    this.log(LogMode.Log, "A player moved but there was no data.");
+                }
             });
 
             this.log(LogMode.Success, "Initialized PublicLobbyBackend!");

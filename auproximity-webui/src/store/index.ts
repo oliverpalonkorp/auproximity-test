@@ -12,6 +12,7 @@ Vue.config.devtools = true
 Vue.use(Vuex)
 
 const state: State = {
+  micAllowed: true,
   joinedRoom: false,
   backendModel: {
     gameCode: '',
@@ -198,6 +199,7 @@ export default new Vuex.Store({
   }
 })
 export interface State {
+  micAllowed: boolean;
   joinedRoom: boolean;
   backendModel: {
     gameCode: string;

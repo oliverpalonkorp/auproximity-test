@@ -4,7 +4,8 @@
   "description": "Proximity Voice Server",
   "author": "cybershard",
   "contributors": [
-    "edqx"
+    "edqx",
+    "miniduikboot"
   ],
   "license": "GPL-3.0-only",
   "scripts": {

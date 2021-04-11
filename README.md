@@ -20,8 +20,11 @@ send a direct message to `edward#8008` on Discord.
 which will serve the purpose of sending positional data to the backend server.
   - Currently, the Impostor plugin and BepInEx mod are separate projects.
 
+See the Impostor fork required for the Impostor backend here: https://github.com/auproximity/Impostor
+and the plugin here: https://github.com/auproximity/AUP-Impostorv
+
 ## Developer Quickstart
-> Note: This project uses `yarn`, so install it if you do not have it already.
+> Note: This project uses `yarn`, so install it with `npm install -g yarn` if you do not have it already.
 
 Follow the steps below to run a server and webui with hot-reload
 - Run `yarn install` to install all dependencies
@@ -56,8 +59,7 @@ features and bugs being worked on, and PRs should close the issues they target
 for fixes and/or implementations.
 
 ## Credits
-The [skeldjs](https://github.com/skeldjs/SkeldJS) library by
-[edqx](https://github.com/edqx), used to interface with public lobbies
+The [skeldjs](https://github.com/skeldjs/SkeldJS) library by [edqx](https://github.com/edqx), used to interface with public lobbies.
 
 ## License
 This software is licensed under the GNU GPLv3 License, and comes with no warranty.
