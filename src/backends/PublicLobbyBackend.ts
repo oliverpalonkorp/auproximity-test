@@ -72,7 +72,7 @@ function fmtName(player: PlayerData) {
         return chalk.grey("<No Data>");
 
     const has_data = !!player.data;
-    const colour = has_data ? player.data.color : "grey";
+    const colour = has_data ? player.data.color : amongus.ColorID.Black;
     const name = has_data ? player.data.name || "<No Name>" : "<No Data>";
     const id = player.id || "<No ID>";
 
