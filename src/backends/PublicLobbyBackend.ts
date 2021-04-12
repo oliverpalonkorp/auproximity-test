@@ -244,6 +244,11 @@ export default class PublicLobbyBackend extends BackendAdapter {
         this.log(LogMode.Success, "Successfully joined!");
         this.log(LogMode.Info, "Replacing state with cached state.. (%i objects, %i netobjects, %i room components)", this.players_cache.size, this.components_cache.size, this.global_cache.length);
 
+        if (!this.client) {
+            await this.destroy();
+            return false;
+        }
+
         for (const [ id, object ] of this.players_cache) {
             if (!object)
                 continue;
@@ -463,7 +468,7 @@ export default class PublicLobbyBackend extends BackendAdapter {
             this.client.on("player.sethost", async ev => {
                 const { player: host } = ev.data;
 
-                if(!host)
+                if(!host || !this.client)
                     return;
 
                 if (host.id === this.client.clientid) {
@@ -643,6 +648,9 @@ export default class PublicLobbyBackend extends BackendAdapter {
 
             this.client.on("gamedata.removeplayer", ev => {
                 const { playerData } = ev.data;
+                if (!this.client)
+                    return;
+
                 const player = this.client.getPlayerByPlayerId(playerData.playerId);
 
                 if (playerData) {

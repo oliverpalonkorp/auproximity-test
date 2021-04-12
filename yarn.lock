@@ -143,14 +143,14 @@
   resolved "https://registry.yarnpkg.com/@sindresorhus/is/-/is-0.14.0.tgz#9fb3a3cf3132328151f353de4632e01e52102bea"
   integrity sha512-9NET910DNaIPngYnLLPeg+Ogzqsi9uM4mSboU5y6p8S5DzMTVEsJZrawi+BoDNUVBa2DhJqQYUFvMDfgU062LQ==
 
-"@skeldjs/client@^2.6.10":
-  version "2.6.10"
-  resolved "https://registry.yarnpkg.com/@skeldjs/client/-/client-2.6.10.tgz#e55041363921884e702f4d5fd371229754773e45"
-  integrity sha512-5xdEoDbvINxi0PT93xBJHUe5W6ca80JqQdp38CN0mqTB20qrvyl5Q8s6yLnetaDwlAU5rcMJ2lJPFYGFlUY/lA==
+"@skeldjs/client@^2.6.11":
+  version "2.6.11"
+  resolved "https://registry.yarnpkg.com/@skeldjs/client/-/client-2.6.11.tgz#cb542e67dc4dbe187271ef5952e07a45517ff6de"
+  integrity sha512-NxbIW94by1rQbapscTQCd/kOOiqmRZbblCJJ600BcG6OrbU0dVKLVSXcdN5GORuRWgROCtwYcL6cMYSYHqoNMQ==
   dependencies:
     "@skeldjs/constant" "^2.6.3"
-    "@skeldjs/core" "^2.6.10"
-    "@skeldjs/data" "^2.6.3"
+    "@skeldjs/core" "^2.6.11"
+    "@skeldjs/data" "^2.6.11"
     "@skeldjs/events" "^2.6.3"
     "@skeldjs/protocol" "^2.6.9"
     "@skeldjs/util" "^2.6.3"
@@ -162,22 +162,22 @@
   dependencies:
     "@skeldjs/util" "^2.6.3"
 
-"@skeldjs/core@^2.6.10":
-  version "2.6.10"
-  resolved "https://registry.yarnpkg.com/@skeldjs/core/-/core-2.6.10.tgz#d085e91cc057a1ca7919cff722c5be1d359cdc05"
-  integrity sha512-YgSBapPa6KqfCG0En9QGEP5jXsF5JQmkQcdGNVhnEibd5U2c9RxO2qZkRzmKVqH8E2tSqmmuh20bc0urwD4weQ==
+"@skeldjs/core@^2.6.11":
+  version "2.6.11"
+  resolved "https://registry.yarnpkg.com/@skeldjs/core/-/core-2.6.11.tgz#5b21ddf7676ac8e7d9ed3a7c7475656b4e80fc12"
+  integrity sha512-mjpoyloKwN7wjQHnuJeHiquIdnwJkjfIIGzWufGBjlIZ3I3pcDcJC/uaYoQwXeLSpE1kS1wr/svUTWWhfYjlRQ==
   dependencies:
     "@skeldjs/constant" "^2.6.3"
-    "@skeldjs/data" "^2.6.3"
+    "@skeldjs/data" "^2.6.11"
     "@skeldjs/events" "^2.6.3"
     "@skeldjs/protocol" "^2.6.9"
     "@skeldjs/types" "^2.2.7"
     "@skeldjs/util" "^2.6.3"
 
-"@skeldjs/data@^2.6.3":
-  version "2.6.3"
-  resolved "https://registry.yarnpkg.com/@skeldjs/data/-/data-2.6.3.tgz#c266193e496d46ce090721226fe4f84a2f04325b"
-  integrity sha512-VwRR2j02d44h9ZAGNnNtBDW2FthDYmaktluS3WyJ1nwMHtE50VrOc1lWGLu2Dyh7hyANCHjtVVKN4oe4XjLLkw==
+"@skeldjs/data@^2.6.11":
+  version "2.6.11"
+  resolved "https://registry.yarnpkg.com/@skeldjs/data/-/data-2.6.11.tgz#08312200a18b3c0609c0559a06358f873eb82e78"
+  integrity sha512-aovGDa0s8oHXnNJ4/BS/gv24RSYIzoeyLEbe2d0bXerfx9vnsNIAD5jb3WcTVxCLE2+Yx4M1QJ9r/bE4b2AIzg==
   dependencies:
     "@skeldjs/constant" "^2.6.3"
 
