@@ -18,11 +18,11 @@ import logger from "./util/logger";
 const app = express();
 
 if (typeof process.env.SENTRY_DSN !== "undefined") {
-    logger.log("Activating Sentry error logging integration");
+    logger.info("Activating Sentry error logging integration..");
     Sentry.init({ dsn: process.env.SENTRY_DSN });
     app.use(Sentry.Handlers.requestHandler());
 } else {
-    logger.log("Skipping Sentry error logging integration");
+    logger.info("Skipping Sentry error logging integration (not configured).");
 }
 
 app.use(sslRedirect());

@@ -190,8 +190,13 @@ export default class PublicLobbyBackend extends BackendAdapter {
                 attempt++;
 
                 const remaining = max_attempts - attempt;
-                this.log(LogMode.Warn, "Failed to initially spawn, Retrying " + remaining + " more time" + (remaining === 1 ? "" : "s") + ", also trying another server.");
-                this.emitError("Couldn't connect to the server. Retrying " + remaining + " more time" + (remaining === 1 ? "" : "s") + ".", false);
+                if (remaining === 0) {
+                    this.log(LogMode.Warn, "Failed to initially spawn after", max_attempts, "attempts.");
+                    this.emitError("Couldn't connect to the server after " + max_attempts + " attempts.", false);
+                } else {
+                    this.log(LogMode.Warn, "Failed to initially spawn, Retrying", remaining, "more time" + (remaining === 1 ? "" : "s") + ",", "also trying another server.");
+                    this.emitError("Couldn't connect to the server. Retrying " + remaining + " more time " + (remaining === 1 ? "" : "s") + ".", false);
+                }
                 return this.doJoin(max_attempts, attempt);
             }
         }

@@ -10,6 +10,7 @@
   "license": "GPL-3.0-only",
   "scripts": {
     "serve": "nodemon ./src/main.ts",
+    "dev": "ts-node ./src/main.ts",
     "build": "cross-env NODE_ENV=production tsc -p ./",
     "build:docker": "docker build -t auproxy-backend .",
     "start": "node ./dist/main.js",
@@ -19,9 +20,9 @@
   "dependencies": {
     "@microsoft/signalr": "^5.0.0",
     "@sentry/node": "^6.2.5",
-    "@skeldjs/client": "^2.6.10",
+    "@skeldjs/client": "^2.6.11",
     "@skeldjs/constant": "^2.6.3",
-    "@skeldjs/core": "^2.6.10",
+    "@skeldjs/core": "^2.6.11",
     "@skeldjs/protocol": "^2.6.9",
     "@skeldjs/text": "^2.6.3",
     "@skeldjs/util": "^2.6.3",
