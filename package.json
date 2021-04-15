@@ -24,7 +24,7 @@
     "@skeldjs/constant": "^2.6.3",
     "@skeldjs/core": "^2.6.11",
     "@skeldjs/protocol": "^2.6.9",
-    "@skeldjs/text": "^2.6.3",
+    "@skeldjs/text": "^2.6.12",
     "@skeldjs/util": "^2.6.3",
     "chalk": "^4.1.0",
     "cors": "^2.8.5",

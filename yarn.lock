@@ -195,10 +195,10 @@
     "@skeldjs/types" "^2.2.7"
     "@skeldjs/util" "^2.6.3"
 
-"@skeldjs/text@^2.6.3":
-  version "2.6.3"
-  resolved "https://registry.yarnpkg.com/@skeldjs/text/-/text-2.6.3.tgz#df48f6aa7bf3422bbe5f5353b902a4e43e0c2769"
-  integrity sha512-ip5V9gckZFAhSmx5Ff95njrTUM7+Qgf0LWq+FrzU6OzLHoEn4S4k8rIzqVdLuNtmMHYB3aEGsk0odXQT/2edTA==
+"@skeldjs/text@^2.6.12":
+  version "2.6.12"
+  resolved "https://registry.yarnpkg.com/@skeldjs/text/-/text-2.6.12.tgz#261e37c353a5569a56b379b8a9be46c3d1d983f4"
+  integrity sha512-JfyL2PUIuFCoTbFkyFrUmT5cDxKovB/TYqtPpGXdbZ4Kyfp45Mqv1XFyo8t1V17PDNfNIa4ndeIwwPXfABmifw==
 
 "@skeldjs/types@^2.2.7":
   version "2.2.7"

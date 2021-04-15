@@ -5,32 +5,12 @@ import path from "path";
 import child_process from "child_process";
 
 import { SkeldjsClient } from "@skeldjs/client";
-import * as amongus from "@skeldjs/constant";
+import { Code2Int } from "@skeldjs/util";
 import * as text from "@skeldjs/text";
+import * as protocol from "@skeldjs/protocol";
+import * as skeldjs from "@skeldjs/core";
 
 const tb = text.tb;
-
-import {
-    MapID,
-    SystemType,
-    ColorID,
-    TheSkeldVent,
-    MiraHQVent,
-    PolusVent,
-    AirshipVent
-} from "@skeldjs/constant";
-
-import {
-    GameOptions
-} from "@skeldjs/protocol";
-
-import {
-    Networkable,
-    PlayerData,
-    GameData,
-    MapVentData,
-    MeetingHud
-} from "@skeldjs/core";
 
 import logger from "../util/logger";
 
@@ -52,31 +32,31 @@ import { GameFlag } from "../types/enums/GameFlags";
 const GAME_VERSION = "2021.4.2.0";
 
 const colours = {
-    [amongus.ColorID.Red]: chalk.redBright,
-    [amongus.ColorID.Blue]: chalk.blue,
-    [amongus.ColorID.DarkGreen]: chalk.green,
-    [amongus.ColorID.Pink]: chalk.magentaBright,
-    [amongus.ColorID.Orange]: chalk.yellowBright,
-    [amongus.ColorID.Yellow]: chalk.yellow,
-    [amongus.ColorID.Black]: chalk.grey,
-    [amongus.ColorID.White]: chalk.white,
-    [amongus.ColorID.Purple]: chalk.magenta,
-    [amongus.ColorID.Brown]: chalk.red,
-    [amongus.ColorID.Cyan]: chalk.cyan,
-    [amongus.ColorID.Lime]: chalk.greenBright
+    [skeldjs.ColorID.Red]: chalk.redBright,
+    [skeldjs.ColorID.Blue]: chalk.blue,
+    [skeldjs.ColorID.DarkGreen]: chalk.green,
+    [skeldjs.ColorID.Pink]: chalk.magentaBright,
+    [skeldjs.ColorID.Orange]: chalk.yellowBright,
+    [skeldjs.ColorID.Yellow]: chalk.yellow,
+    [skeldjs.ColorID.Black]: chalk.grey,
+    [skeldjs.ColorID.White]: chalk.white,
+    [skeldjs.ColorID.Purple]: chalk.magenta,
+    [skeldjs.ColorID.Brown]: chalk.red,
+    [skeldjs.ColorID.Cyan]: chalk.cyan,
+    [skeldjs.ColorID.Lime]: chalk.greenBright
 };
 
 
-function fmtName(player: PlayerData) {
+function fmtName(player: skeldjs.PlayerData) {
     if (!player)
         return chalk.grey("<No Data>");
 
     const has_data = !!player.data;
-    const colour = has_data ? player.data.color : amongus.ColorID.Black;
+    const colour = has_data ? player.data.color : skeldjs.ColorID.Black;
     const name = has_data ? player.data.name || "<No Name>" : "<No Data>";
     const id = player.id || "<No ID>";
 
-    const consoleClr: chalk.Chalk = colours[colour] || colours[amongus.ColorID.Black];
+    const consoleClr: chalk.Chalk = colours[colour] || colours[skeldjs.ColorID.Black];
 
     return consoleClr(name) + " " + chalk.grey("(" + id + ")");
 }
@@ -106,9 +86,9 @@ export default class PublicLobbyBackend extends BackendAdapter {
     master: RegionServers;
     server: number;
 
-    players_cache: Map<number, PlayerData>;
-    components_cache: Map<number, Networkable>;
-    global_cache: Networkable[];
+    players_cache: Map<number, skeldjs.PlayerData>;
+    components_cache: Map<number, skeldjs.Networkable>;
+    global_cache: skeldjs.Networkable[];
 
     settings: GameSettings;
 
@@ -118,7 +98,7 @@ export default class PublicLobbyBackend extends BackendAdapter {
         this.backendModel = backendModel;
         this.gameID = this.backendModel.gameCode;
         this.settings = {
-            map: MapID.TheSkeld,
+            map: skeldjs.MapID.TheSkeld,
             crewmateVision: 1
         };
     }
@@ -131,23 +111,89 @@ export default class PublicLobbyBackend extends BackendAdapter {
 
     getVentName(ventid: number): string|null {
         const map = this.client.settings.map;
-        const data = MapVentData[map][ventid];
+        const data = skeldjs.MapVentData[map][ventid];
 
         if (!data)
             return null;
 
         switch (map) {
-            case MapID.TheSkeld:
-                return TheSkeldVent[data.id];
-            case MapID.MiraHQ:
-                return MiraHQVent[data.id];
-            case MapID.Polus:
-                return PolusVent[data.id];
-            case MapID.Airship:
-                return AirshipVent[data.id];
+            case skeldjs.MapID.TheSkeld:
+                return skeldjs.TheSkeldVent[data.id];
+            case skeldjs.MapID.MiraHQ:
+                return skeldjs.MiraHQVent[data.id];
+            case skeldjs.MapID.Polus:
+                return skeldjs.PolusVent[data.id];
+            case skeldjs.MapID.Airship:
+                return skeldjs.AirshipVent[data.id];
         }
 
         return null;
+    }
+
+    async joinGame(code: skeldjs.RoomID, doSpawn = true): Promise<skeldjs.RoomID> {
+        if (typeof code === "undefined") {
+            throw new Error("No code provided.");
+        }
+
+        if (typeof code === "string") {
+            return this.joinGame(Code2Int(code), doSpawn);
+        }
+
+        if (!this.client.identified) {
+            return null;
+        }
+
+        if (this.client.me && this.client.code !== code) {
+            const username = this.client.username;
+            await this.client.disconnect();
+            this.authToken = await this.tryGetAuthToken(this.master[this.server]);
+            await this.client.connect(this.client.ip, username, this.authToken, this.client.port);
+        }
+
+        await this.client.send({
+            op: skeldjs.Opcode.Reliable,
+            payloads: [
+                {
+                    code,
+                    tag: skeldjs.PayloadTag.JoinGame,
+                    mapOwnership: 0x7, // All maps
+                },
+            ],
+        });
+
+        const payload = (await this.client.waitPayload([
+            (payload) => payload.tag === skeldjs.PayloadTag.JoinGame && payload.error,
+            (payload) => payload.tag === skeldjs.PayloadTag.Redirect,
+            (payload) => payload.tag === skeldjs.PayloadTag.JoinedGame,
+        ])) as
+            | protocol.JoinGamePayloadClientboundError
+            | protocol.RedirectPayload
+            | protocol.JoinedGamePayload;
+            
+        const username = this.client.username;
+
+        switch (payload.tag) {
+            case skeldjs.PayloadTag.JoinGame:
+                throw new Error(
+                    "Join error: Failed to join game, code: " +
+                        payload.reason +
+                        " (Message: " +
+                        skeldjs.DisconnectMessages[payload.reason] +
+                        ")"
+                );
+            case skeldjs.PayloadTag.Redirect:
+                await this.client.disconnect();
+                this.authToken = await this.tryGetAuthToken([ payload.ip, payload.port ]);
+                await this.client.connect(payload.ip, username, this.authToken, payload.port);
+
+                return await this.joinGame(code, doSpawn);
+            case skeldjs.PayloadTag.JoinedGame:
+                if (doSpawn) {
+                    await this.client.spawnSelf();
+                }
+
+                return this.client.code;
+        }
     }
 
     async doJoin(max_attempts = 5, attempt = 0): Promise<boolean> {
@@ -211,7 +257,7 @@ export default class PublicLobbyBackend extends BackendAdapter {
         
         try {
             await this.client.connect(ip, undefined, undefined, port);
-            await this.client.identify("auproxy", this.authToken);
+            await this.client.identify("Roundcar", this.authToken);
         } catch (e) {
             const err = e as Error;
             this.server++;
@@ -226,7 +272,7 @@ export default class PublicLobbyBackend extends BackendAdapter {
         this.log(LogMode.Info, "Successfully connected to server.");
 
         try {
-            await this.client.joinGame(this.backendModel.gameCode, false);
+            await this.joinGame(this.backendModel.gameCode, false);
         } catch (e) {
             const err = e as Error;
             attempt++;
@@ -289,7 +335,7 @@ export default class PublicLobbyBackend extends BackendAdapter {
         if (!this.client)
             return;
 
-        this.players_cache = new Map([...this.client.objects.entries()].filter(([ objectid ]) => objectid !== this.client.clientid && objectid > 0 /* not global */)) as Map<number, PlayerData>;
+        this.players_cache = new Map([...this.client.objects.entries()].filter(([ objectid ]) => objectid !== this.client.clientid && objectid > 0 /* not global */)) as Map<number, skeldjs.PlayerData>;
         this.components_cache = new Map([...this.client.netobjects.entries()].filter(([ , component ]) => component.ownerid !== this.client.clientid));
         this.global_cache = this.client.components;
     }
@@ -317,7 +363,7 @@ export default class PublicLobbyBackend extends BackendAdapter {
         return regions[region];
     }
 
-    getAuthToken(): Promise<number> {
+    getAuthToken(server: [ string, number ]): Promise<number> {
         return new Promise((resolve, reject) => {
             const ver = process.platform === "win32" ? "win-x64" : "linux-x64";
             const tokenRegExp = /TOKEN:(\d+):TOKEN/;
@@ -326,7 +372,8 @@ export default class PublicLobbyBackend extends BackendAdapter {
             
             const args = [
                 path.resolve(process.cwd(), "./PubsCert.pem"),
-                this.master[this.server][0]
+                server[0],
+                (server[1] + 2).toString()
             ];
             
             const proc = child_process.spawn(pathToGetAuthToken, args);
@@ -338,27 +385,27 @@ export default class PublicLobbyBackend extends BackendAdapter {
                     const foundToken = tokenRegExp.exec(out.toString("utf8"))[1];
             
                     const authToken = parseInt(foundToken);
-                    proc.kill();
+                    proc.kill("SIGINT");
                     resolve(authToken);
                 }
             });
         
             proc.on("error", err => {
-                proc.kill();
+                proc.kill("SIGINT");
                 reject(err);
             });
 
             // eslint-disable-next-line promise/catch-or-return, promise/always-return
-            sleep(5000).then(() => {
-                proc.kill();
+            sleep(2000).then(() => {
+                proc.kill("SIGINT");
                 reject(new Error("GetAuthToken took too long to get a token."));
             });
         });
     }
 
-    async tryGetAuthToken(cur_attempt = 0): Promise<number> {
+    async tryGetAuthToken(ip: [ string, number ], cur_attempt = 0): Promise<number> {
         try {
-            return await this.getAuthToken();
+            return await this.getAuthToken(ip);
         } catch (e) {
             cur_attempt++;
             const remaining = 5 - cur_attempt;
@@ -366,11 +413,10 @@ export default class PublicLobbyBackend extends BackendAdapter {
             this.log(LogMode.Error, "Failed to get authorisation token, trying " + remaining + " more times. " + (e?.message?.toString() || e));
 
             if (remaining) {
-                this.emitError("Failed to authorize with among us servers, trying " + remaining + " more times.", false);
-                return await this.tryGetAuthToken(cur_attempt);
+                return await this.tryGetAuthToken(ip, cur_attempt);
             } else {
-                await this.destroy();
-                return null;
+                this.log(LogMode.Error, "Failed to get authorisation token from the server, using 0.");
+                return 0;
             }
         }
     }
@@ -402,16 +448,16 @@ export default class PublicLobbyBackend extends BackendAdapter {
             // See https://github.com/auproximity/AUP-Impostor for the plugin.
 
             this.log(LogMode.Info, "Getting authorisation token from server..");
-            // this.authToken = await this.tryGetAuthToken();
+            this.authToken = await this.tryGetAuthToken(this.master[this.server]);
             // Everything written above is a lie, because Forte disabled authorisation temporarily.
-            this.authToken = Math.floor(Math.random() * (2 ** 32 - 1));
+            // this.authToken = Math.floor(Math.random() * (2 ** 32 - 1));
 
-            if (!this.authToken) {
+            if (this.authToken === null) {
                 this.log(LogMode.Fatal, "Failed to get auth token.");
                 return this.emitError("Could not get authorization token, ask an admin to check the logs for more information.", true);
             }
 
-            this.log(LogMode.Success, "Successfully got authorization token from the server.");
+            this.log(LogMode.Success, "Successfully got authorization token from the server, " + this.authToken + ".");
 
             if (!await this.doJoin())
                 return;
@@ -508,7 +554,7 @@ export default class PublicLobbyBackend extends BackendAdapter {
 
             this.client.on("system.sabotage", ev => {
                 const { system } = ev.data;
-                if (system.systemType === SystemType.Communications) {
+                if (system.systemType === skeldjs.SystemType.Communications) {
                     this.emitGameFlags(GameFlag.CommsSabotaged, true);
                     this.log(LogMode.Info, "Someone sabotaged communications.");
                 }
@@ -516,7 +562,7 @@ export default class PublicLobbyBackend extends BackendAdapter {
 
             this.client.on("system.repair", ev => {
                 const { system } = ev.data;
-                if (system.systemType === SystemType.Communications) {
+                if (system.systemType === skeldjs.SystemType.Communications) {
                     this.emitGameFlags(GameFlag.CommsSabotaged, false);
                     this.log(LogMode.Info, "Someone repaired communications.");
                 }
@@ -533,7 +579,7 @@ export default class PublicLobbyBackend extends BackendAdapter {
                 if (settings.map !== this.settings.map) {
                     this.settings.map = settings.map;
 
-                    this.log(LogMode.Info, "Map is now set to " + MapID[settings.map] + ".");
+                    this.log(LogMode.Info, "Map is now set to " + skeldjs.MapID[settings.map] + ".");
                 }
                 
                 this.emitSettingsUpdate(this.settings);
@@ -555,7 +601,7 @@ export default class PublicLobbyBackend extends BackendAdapter {
             this.client.on("player.setcolor", ev => {
                 const { player, color } = ev.data;
                 if (player?.data) {
-                    this.log(LogMode.Info, fmtName(player), "set their colour to " + ColorID[color] + ".");
+                    this.log(LogMode.Info, fmtName(player), "set their colour to " + skeldjs.ColorID[color] + ".");
                     this.emitPlayerColor(player.data.name, color);
                 } else {
                     if (player) {
@@ -570,7 +616,7 @@ export default class PublicLobbyBackend extends BackendAdapter {
                 const ev = await this.client.wait("component.spawn");
                 const { component } = ev.data;
                 if (component.classname === "MeetingHud") {
-                    const meetinghud = component as MeetingHud;
+                    const meetinghud = component as skeldjs.MeetingHud;
                     this.emitGameState(GameState.Meeting);
 
                     const all_states = [...meetinghud.states.values()];
@@ -724,7 +770,7 @@ export default class PublicLobbyBackend extends BackendAdapter {
                 if (component.classname === "GameData") {
                     gamedataSpawned = true;
 
-                    const gamedata = component as GameData;
+                    const gamedata = component as skeldjs.GameData;
                     for (const [ , player ] of gamedata.players) {
                         if (player.name) _this.emitPlayerColor(player.name, player.color);
                     }
@@ -746,7 +792,7 @@ export default class PublicLobbyBackend extends BackendAdapter {
         });
     }
 
-    async awaitSettings(): Promise<GameOptions> {
+    async awaitSettings(): Promise<protocol.GameOptions> {
         if (this.client.settings) {
             return this.client.settings;
         }
@@ -765,7 +811,7 @@ export default class PublicLobbyBackend extends BackendAdapter {
             await this.client.connect(ip, undefined, undefined, port);
             if (!this.client)
                 return ConnectionErrorCode.NoClient;
-            await Promise.race([this.client.identify("auproxy", this.authToken), sleep(2000)]);
+            await Promise.race([this.client.identify("Roundcar", this.authToken), sleep(2000)]);
             if (!this.client.identified) {
                 if (isFinal) this.emitError("Couldn't connect to the Among Us servers, the servers may be full. Try a different region or try again later.", true);
                 return ConnectionErrorCode.TimedOut;
@@ -783,7 +829,7 @@ export default class PublicLobbyBackend extends BackendAdapter {
         
         this.log(LogMode.Info, "Joining room..");
         try {
-            const code = await Promise.race([this.client.joinGame(this.backendModel.gameCode, false), sleep(5000)]);
+            const code = await Promise.race([this.joinGame(this.backendModel.gameCode, false), sleep(5000)]);
             if (!code) {
                 if (isFinal) this.emitError("Timed out while connecting to servers.", true);
                 return ConnectionErrorCode.TimedOut;
@@ -833,7 +879,7 @@ export default class PublicLobbyBackend extends BackendAdapter {
             map: settings.map
         });
         this.log(LogMode.Info, "Crewmate vision is at " + settings.crewmateVision);
-        this.log(LogMode.Info, "Map is on " + MapID[settings.map]);
+        this.log(LogMode.Info, "Map is on " + skeldjs.MapID[settings.map]);
         
         if (this.client.host && this.client.host.data) {
             this.emitHostChange(this.client.host.data.name);
@@ -849,10 +895,10 @@ export default class PublicLobbyBackend extends BackendAdapter {
         }
 
         const formatted = tb(text.bold(), text.color("blue"), text.align(text.Align.Center))
-            .text("AUProximity is ready.");
+            .text("<sprite=0> AUProximity is ready. <sprite=0>", true);
 
         await this.client.me.control.checkName("ㆍ");
-        await this.client.me.control.checkColor(ColorID.Blue);
+        await this.client.me.control.checkColor(skeldjs.ColorID.Blue);
         await this.client.me.wait("player.setname");
         await this.client.me.control.chat(formatted.toString());
 
