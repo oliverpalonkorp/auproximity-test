@@ -64,7 +64,6 @@ import ClientListItem from '@/components/ClientListItem.vue'
 import MyClientListItem from '@/components/MyClientListItem.vue'
 import { GameFlag, GameState, GameSettings } from '@/models/RoomModel'
 import { getClosestCamera } from '@/lib/CameraPositions'
-import { HostOptions } from '../../../src/types/models/ClientOptions'
 
 const AudioContext = window.AudioContext || // Default
   // eslint-disable-next-line @typescript-eslint/no-explicit-any

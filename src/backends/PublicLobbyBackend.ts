@@ -49,7 +49,7 @@ import { GameFlag } from "../types/enums/GameFlags";
 
 // ~~Using integer for now, version parsing isn't working on SkeldJS with 2020.3.5.0 for some reason.~~
 // I'm keeping this comment here because it shows how stupid I am that it is in fact 2021 and not 2020.
-const GAME_VERSION = "2021.3.25.0";
+const GAME_VERSION = "2021.4.2.0";
 
 const colours = {
     [amongus.ColorID.Red]: chalk.redBright,
