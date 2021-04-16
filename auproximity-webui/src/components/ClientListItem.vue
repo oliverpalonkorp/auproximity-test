@@ -9,8 +9,8 @@
           <span class="float-left">
             <i v-if="stream && stream.levels > 10" class="fas fa-volume-up"></i>
             <i v-else class="fas fa-volume-off"></i>
-            <span class="pl-3">{{ client.name }}</span>
-            <span v-if="$store.state.host && $store.state.host.toLowerCase() === client.name.toLowerCase()">
+            <span class="pl-3">{{ client.name.trim() }}</span>
+            <span v-if="$store.state.host && $store.state.host.toLowerCase().trim() === client.name.toLowerCase().trim()">
               (HOST)
             </span>
           </span>

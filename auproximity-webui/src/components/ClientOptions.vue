@@ -103,7 +103,7 @@ export default class ClientOptions extends Vue {
   }
 
   get amhost () {
-    return this.$store.state.host && this.$store.state.host.toLowerCase() === this.$store.state.me.name.toLowerCase()
+    return this.$store.state.host?.toLowerCase()?.trim() === this.$store.state.me?.name?.toLowerCase()?.trim()
   }
 }
 </script>

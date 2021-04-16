@@ -169,7 +169,7 @@ export default class Room {
     }
 
     getPlayerByName(name: string): PlayerModel {
-        const found = this.players.get(name.toLowerCase());
+        const found = this.players.get(name.toLowerCase().trim());
 
         if (found) {
             return found;
@@ -182,12 +182,12 @@ export default class Room {
             flags: PlayerFlag.None
         };
 
-        this.players.set(name.toLowerCase(), player);
+        this.players.set(name.toLowerCase().trim(), player);
         return player;
     }
 
     getClientByName(name: string): Client|undefined {
-        return this.clients.find(client => client.name?.toLowerCase() === name.toLowerCase());
+        return this.clients.find(client => client.name?.toLowerCase()?.trim() === name.toLowerCase().trim());
     }
 
     addClient(client: Client): void {
