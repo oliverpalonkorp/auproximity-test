@@ -1,9 +1,8 @@
-import { Vector2 } from '@skeldjs/util'
 import Vue from 'vue'
 import Vuex from 'vuex'
 
 import { BackendModel, BackendType } from '@/models/BackendModel'
-import { ClientModel, ColorID, MyMicModel, PlayerFlag } from '@/models/ClientModel'
+import { ClientModel, ColorID, MyMicModel, PlayerFlag, PlayerPose } from '@/models/ClientModel'
 
 import { ClientSocketEvents } from '@/models/ClientSocketEvents'
 import { HostOptions, ClientOptions, GameState, GameFlag } from '@/models/RoomModel'
@@ -34,7 +33,8 @@ const state: State = {
       y: 0
     },
     color: -1,
-    flags: PlayerFlag.None
+    flags: PlayerFlag.None,
+    ventid: -1
   },
   clients: [],
   options: {
@@ -67,14 +67,24 @@ export default new Vuex.Store({
     removeClient (state: State, uuid: string) {
       state.clients = state.clients.filter(c => c.uuid !== uuid)
     },
-    setPosition (state: State, payload: Vector2) {
-      state.me.position = payload
+    setPosition (state: State, position: PlayerPose) {
+      state.me.position = position
     },
-    setPositionOf (state: State, payload: { uuid: string; position: Vector2 }) {
+    setPositionOf (state: State, payload: { uuid: string; position: PlayerPose }) {
       const index = state.clients.findIndex(c => c.uuid === payload.uuid)
 
       if (index !== -1) {
         state.clients[index].position = payload.position
+      }
+    },
+    setVent (state: State, ventid: number) {
+      state.me.ventid = ventid
+    },
+    setVentOf (state: State, payload: { uuid: string; ventid: number }) {
+      const index = state.clients.findIndex(c => c.uuid === payload.uuid)
+
+      if (index !== -1) {
+        state.clients[index].ventid = payload.ventid
       }
     },
     setColor (state: State, color: ColorID) {
@@ -144,7 +154,8 @@ export default new Vuex.Store({
         name: payload.name,
         position: payload.position,
         color: payload.color,
-        flags: payload.flags
+        flags: payload.flags,
+        ventid: payload.ventid
       }
       commit('addClient', client)
     },
@@ -154,18 +165,26 @@ export default new Vuex.Store({
         name: c.name,
         position: c.position,
         color: c.color,
-        flags: c.flags
+        flags: c.flags,
+        ventid: c.ventid
       }))
       commit('setAllClients', clients)
     },
     [`socket_${ClientSocketEvents.RemoveClient}`] ({ commit }, uuid: string) {
       commit('removeClient', uuid)
     },
-    [`socket_${ClientSocketEvents.SetPositionOf}`] ({ commit, state }, payload: { uuid: string; position: Vector2 }) {
+    [`socket_${ClientSocketEvents.SetPositionOf}`] ({ commit, state }, payload: { uuid: string; position: PlayerPose }) {
       if (payload.uuid === state.me.uuid) {
         commit('setPosition', payload.position)
       } else {
         commit('setPositionOf', { uuid: payload.uuid, position: payload.position })
+      }
+    },
+    [`socket_${ClientSocketEvents.SetVentOf}`] ({ commit, state }, payload: { uuid: string; ventid: number }) {
+      if (payload.uuid === state.me.uuid) {
+        commit('setVent', payload.ventid)
+      } else {
+        commit('setVentOf', { uuid: payload.uuid, venstid: payload.ventid })
       }
     },
     [`socket_${ClientSocketEvents.SetColorOf}`] ({ commit, state }, payload: { uuid: string; color: ColorID }) {

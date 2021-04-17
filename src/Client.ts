@@ -1,7 +1,6 @@
 import { Socket } from "socket.io";
 
 import { ColorID } from "@skeldjs/constant";
-import { Vector2 } from "@skeldjs/util";
 
 import {
     BackendModel,
@@ -26,11 +25,17 @@ import { PlayerFlag } from "./types/enums/PlayerFlags";
 import { GameFlag } from "./types/enums/GameFlags";
 import { GameState } from "./types/enums/GameState";
 
+export interface PlayerPose {
+    x: number;
+    y: number;
+}
+
 export interface PlayerModel {
     name: string;
-    position: Vector2;
+    position: PlayerPose;
     color: ColorID;
     flags: number;
+    ventid: number;
 }
 
 export default class Client implements ClientBase {
@@ -131,7 +136,7 @@ export default class Client implements ClientBase {
         this.socket.emit(ClientSocketEvents.SyncAllClients, array);
     }
 
-    addClient(uuid: string, name: string, position: Vector2, color: ColorID): void {
+    addClient(uuid: string, name: string, position: PlayerPose, color: ColorID): void {
         this.socket.emit(ClientSocketEvents.AddClient, {
             uuid,
             name,
@@ -144,8 +149,12 @@ export default class Client implements ClientBase {
         this.socket.emit(ClientSocketEvents.RemoveClient, { uuid, ban });
     }
 
-    setPositionOf(uuid: string, position: Vector2): void {
+    setPoseOf(uuid: string, position: PlayerPose): void {
         this.socket.emit(ClientSocketEvents.SetPositionOf, { uuid, position });
+    }
+
+    setVentOf(uuid: string, ventid: number): void {
+        this.socket.emit(ClientSocketEvents.SetVentOf, { uuid, ventid });
     }
 
     setColorOf(uuid: string, color: ColorID): void {

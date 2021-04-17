@@ -23,7 +23,7 @@ export default class ImpostorBackend extends BackendAdapter {
         this.gameID = this.backendModel.ip + ":" + IMPOSTOR_BACKEND_PORT;
     }
 
-    throttledEmitPlayerMove = _.throttle(this.emitPlayerPosition, 300);
+    throttledEmitPlayerMove = _.throttle(this.emitPlayerPose, 300);
 
     initialize(): void {
         try {

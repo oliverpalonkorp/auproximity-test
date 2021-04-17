@@ -1,5 +1,4 @@
 import { ColorID, MapID } from "@skeldjs/constant";
-import { Vector2 } from "@skeldjs/util";
 
 import { BackendEvent } from "./types/enums/BackendEvents";
 
@@ -18,7 +17,7 @@ import ImpostorBackend from "./backends/ImpostorBackend";
 import NoOpBackend from "./backends/NoOpBackend";
 import PublicLobbyBackend from "./backends/PublicLobbyBackend";
 
-import Client, { PlayerModel } from "./Client";
+import Client, { PlayerModel, PlayerPose } from "./Client";
 import { PlayerFlag } from "./types/enums/PlayerFlags";
 
 import { state } from "./main";
@@ -69,12 +68,25 @@ export default class Room {
     }
 
     private initializeBackend() {
-        this.backendAdapter.on(BackendEvent.PlayerPosition, (payload: { name: string; position: Vector2; }) => {
+        this.backendAdapter.on(BackendEvent.PlayerPose, (payload: { name: string; position: PlayerPose; ventid: number; }) => {
             const client = this.getClientByName(payload.name);
 
             if (client) {
                 this.clients.forEach(c => {
-                    c.setPositionOf(client.uuid, payload.position);
+                    c.setPoseOf(client.uuid, payload.position);
+                });
+            }
+        });
+
+        this.backendAdapter.on(BackendEvent.PlayerVent, (payload: { name: string, ventid: number }) => {
+            const client = this.getClientByName(payload.name);
+            const player = this.getPlayerByName(payload.name);
+
+            player.ventid = payload.ventid;
+
+            if (client) {
+                this.clients.forEach(c => {
+                    c.setVentOf(client.uuid, payload.ventid);
                 });
             }
         });
@@ -179,7 +191,8 @@ export default class Room {
             name,
             position: { x: 0, y: 0 },
             color: -1,
-            flags: PlayerFlag.None
+            flags: PlayerFlag.None,
+            ventid: -1
         };
 
         this.players.set(name.toLowerCase().trim(), player);
@@ -204,18 +217,18 @@ export default class Room {
 
         this.clients.forEach(c => {
             c.addClient(client.uuid, player.name, player.position, player.color);
-            c.setPositionOf(client.uuid, player.position);
+            c.setPoseOf(client.uuid, player.position);
             c.setColorOf(client.uuid, player.color);
 
             const p = this.getPlayerByName(c.name);
             client.setColorOf(c.uuid, p.color);
-            client.setPositionOf(c.uuid, p.position);
+            client.setPoseOf(c.uuid, p.position);
             client.setFlagsOf(c.uuid, p.flags);
         });
 
         this.clients.push(client);
 
-        client.setPositionOf(client.uuid, player.position);
+        client.setPoseOf(client.uuid, player.position);
         client.setColorOf(client.uuid, player.color);
         client.setGameState(this.state);
         client.setGameFlags(this.flags);

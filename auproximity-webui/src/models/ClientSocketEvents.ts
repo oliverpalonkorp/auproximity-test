@@ -7,6 +7,7 @@ export enum ClientSocketEvents {
   AddClient = 'addclient',
   RemoveClient = 'removeclient',
   SetPositionOf = 'setpositionof',
+  SetVentOf = 'setventof',
   SetColorOf = 'setcolorof',
   SetHost = 'sethost',
   SetOptions = 'setoptions',

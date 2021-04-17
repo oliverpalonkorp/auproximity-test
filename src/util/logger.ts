@@ -3,11 +3,10 @@ import util from "util";
 
 function _log(prefix: string, template: string, ...fmt: unknown[]): void {
     const formatted = util.format(template, ...fmt);
-    const date = new Date().toISOString();
     // eslint-disable-next-line no-control-regex
     const clean = prefix.replace(/\x1b\[\d+m/g, "");
 
-    process.stdout.write(chalk.gray("[" + date + "]") + " ".repeat(10 - clean.length) + prefix + " " + formatted + "\n");
+    process.stdout.write(" ".repeat(10 - clean.length) + prefix + " " + formatted + "\n");
 }
 
 export function log(template: string, ...fmt: unknown[]): void {

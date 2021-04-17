@@ -1,19 +1,22 @@
-import { Vector2 } from '@skeldjs/util'
-
 export enum PlayerFlag {
   None = 0,
   IsImpostor = 1,
   IsDead = 2,
-  OnCams = 4,
-  InVent = 8
+  OnCams = 4
+}
+
+export interface PlayerPose {
+    x: number;
+    y: number;
 }
 
 export interface ClientModel {
   uuid: string;
   name: string;
-  position: Vector2;
+  position: PlayerPose;
   color: ColorID;
   flags: PlayerFlag;
+  ventid: number;
 }
 
 export interface RemoteStreamModel {

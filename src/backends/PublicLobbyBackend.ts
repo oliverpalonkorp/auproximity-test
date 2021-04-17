@@ -47,7 +47,7 @@ const colours = {
 };
 
 
-function fmtName(player: skeldjs.PlayerData) {
+function fmtName(player: skeldjs.PlayerData|undefined) {
     if (!player)
         return chalk.grey("<No Data>");
 
@@ -80,7 +80,7 @@ export default class PublicLobbyBackend extends BackendAdapter {
 
     backendModel: PublicLobbyBackendModel;
 
-    client: SkeldjsClient;
+    client: SkeldjsClient|undefined;
 
     authToken: number;
     master: RegionServers;
@@ -110,6 +110,9 @@ export default class PublicLobbyBackend extends BackendAdapter {
     }
 
     getVentName(ventid: number): string|null {
+        if (!this.client)
+            return null;
+
         const map = this.client.settings.map;
         const data = skeldjs.MapVentData[map][ventid];
 
@@ -130,7 +133,7 @@ export default class PublicLobbyBackend extends BackendAdapter {
         return null;
     }
 
-    async joinGame(code: skeldjs.RoomID, doSpawn = true): Promise<skeldjs.RoomID> {
+    async joinGame(code: skeldjs.RoomID, doSpawn = true): Promise<skeldjs.RoomID|null> {
         if (typeof code === "undefined") {
             throw new Error("No code provided.");
         }
@@ -138,6 +141,9 @@ export default class PublicLobbyBackend extends BackendAdapter {
         if (typeof code === "string") {
             return this.joinGame(Code2Int(code), doSpawn);
         }
+
+        if (!this.client)
+            return null;
 
         if (!this.client.identified) {
             return null;
@@ -335,14 +341,14 @@ export default class PublicLobbyBackend extends BackendAdapter {
         if (!this.client)
             return;
 
-        this.players_cache = new Map([...this.client.objects.entries()].filter(([ objectid ]) => objectid !== this.client.clientid && objectid > 0 /* not global */)) as Map<number, skeldjs.PlayerData>;
-        this.components_cache = new Map([...this.client.netobjects.entries()].filter(([ , component ]) => component.ownerid !== this.client.clientid));
+        this.players_cache = new Map([...this.client.objects.entries()].filter(([ objectid ]) => objectid !== this.client?.clientid && objectid > 0 /* not global */)) as Map<number, skeldjs.PlayerData>;
+        this.components_cache = new Map([...this.client.netobjects.entries()].filter(([ , component ]) => component.ownerid !== this.client?.clientid));
         this.global_cache = this.client.components;
     }
 
     async disconnect(): Promise<void> {
         this.resetObjectCaches();
-        await this.client.disconnect();
+        await this.client?.disconnect();
     }
 
     async resolveMMDNS(region: string, names: string[]): Promise<RegionServers> {
@@ -380,9 +386,10 @@ export default class PublicLobbyBackend extends BackendAdapter {
 
             proc.stdout.on("data", chunk => {
                 const out = chunk.toString("utf8");
+                const matched = tokenRegExp.exec(out.toString("utf8"));
 
-                if (tokenRegExp.test(out)) {
-                    const foundToken = tokenRegExp.exec(out.toString("utf8"))[1];
+                if (matched) {
+                    const foundToken = matched[1];
             
                     const authToken = parseInt(foundToken);
                     proc.kill("SIGINT");
@@ -462,6 +469,9 @@ export default class PublicLobbyBackend extends BackendAdapter {
             if (!await this.doJoin())
                 return;
 
+            if (!this.client)
+                return;
+
             this.client.on("client.disconnect", async ev => {
                 const { reason, message } = ev.data;
 
@@ -471,17 +481,17 @@ export default class PublicLobbyBackend extends BackendAdapter {
             this.client.on("player.move", ev => {
                 const { player, position } = ev.data;
 
-                if (player.data) {
-                    this.emitPlayerPosition(player.data.name, position);
+                if (player?.data) {
+                    this.emitPlayerPose(player.data.name, position);
                 }
             });
 
             this.client.on("player.snapto", ev => {
                 const { player, position } = ev.data;
 
-                if (player.data) {
+                if (player?.data) {
                     this.log(LogMode.Log, "Got SnapTo for", fmtName(player), "to x: " + position.x + " y: " + position.y);
-                    this.emitPlayerPosition(player.data.name, position);
+                    this.emitPlayerPose(player.data.name, position);
                 } else {
                     this.log(LogMode.Warn, "Got snapto, but there was no data.");
                 }
@@ -544,11 +554,19 @@ export default class PublicLobbyBackend extends BackendAdapter {
 
             this.client.on("player.join", ev => {
                 const { player } = ev.data;
+
+                if (!player)
+                    return;
+
                 this.log(LogMode.Info, "Player with ID " + player.id + " joined the game.");
             });
 
             this.client.on("player.leave", ev => {
                 const { player } = ev.data;
+                
+                if (!player)
+                    return;
+
                 this.log(LogMode.Log, "Player with ID " + player.id + " left or was removed.");
             });
 
@@ -587,7 +605,7 @@ export default class PublicLobbyBackend extends BackendAdapter {
 
             this.client.on("player.setname", ev => {
                 const { player } = ev.data;
-                if (player.data) {
+                if (player?.data) {
                     this.log(LogMode.Info, fmtName(player), "updated their name.");
                 } else {
                     if (player) {
@@ -613,6 +631,9 @@ export default class PublicLobbyBackend extends BackendAdapter {
             });
 
             this.client.on("player.meeting", async () => {
+                if (!this.client)
+                    return;
+
                 const ev = await this.client.wait("component.spawn");
                 const { component } = ev.data;
                 if (component.classname === "MeetingHud") {
@@ -663,7 +684,7 @@ export default class PublicLobbyBackend extends BackendAdapter {
                 const { player, ventid } = ev.data;
                 if (player && player.data) {
                     this.log(LogMode.Log, fmtName(player), "entered vent '" + this.getVentName(ventid) + ".");
-                    this.emitPlayerFlags(player.data.name, PlayerFlag.InVent, true);
+                    this.emitPlayerVent(player.data.name, ventid);
                 } else {
                     this.log(LogMode.Warn, "Someone entered a vent, but there was no data.");
                 }
@@ -673,7 +694,7 @@ export default class PublicLobbyBackend extends BackendAdapter {
                 const { player, ventid } = ev.data;
                 if (player && player.data) {
                     this.log(LogMode.Log, fmtName(player), "exited vent '" + this.getVentName(ventid) + ".");
-                    this.emitPlayerFlags(player.data.name, PlayerFlag.InVent, true);
+                    this.emitPlayerVent(player.data.name, -1);
                 } else {
                     this.log(LogMode.Warn, "Someone exited a vent, but there was no data.");
                 }
@@ -759,6 +780,9 @@ export default class PublicLobbyBackend extends BackendAdapter {
 
     awaitSpawns(): Promise<boolean> {
         return new Promise<boolean>(resolve => {
+            if (!this.client)
+                return resolve(false);
+
             const playersSpawned: number[] = [];
             let gamedataSpawned = false;
 
@@ -767,6 +791,10 @@ export default class PublicLobbyBackend extends BackendAdapter {
 
             this.client.on("component.spawn", function onSpawn(ev) {
                 const { component } = ev.data;
+
+                if (!_this.client)
+                    return;
+
                 if (component.classname === "GameData") {
                     gamedataSpawned = true;
 
@@ -792,7 +820,10 @@ export default class PublicLobbyBackend extends BackendAdapter {
         });
     }
 
-    async awaitSettings(): Promise<protocol.GameOptions> {
+    async awaitSettings(): Promise<protocol.GameOptions|null> {
+        if (!this.client)
+            return null;
+
         if (this.client.settings) {
             return this.client.settings;
         }
@@ -805,6 +836,9 @@ export default class PublicLobbyBackend extends BackendAdapter {
     async initialSpawn(isFinal = false): Promise<ConnectionErrorCode> {
         const ip = this.master[this.server][0];
         const port = this.master[this.server][1];
+
+        if (!this.client)
+            return ConnectionErrorCode.NoClient;
         
         this.log(LogMode.Info, "Joining for the first time with server %s:%i", ip, port);
         try {

@@ -1,5 +1,6 @@
 export enum BackendEvent {
-    PlayerPosition = "playerposition",
+    PlayerPose = "playerposition",
+    PlayerVent = "playervent",
     PlayerColor = "playercolor",
     PlayerFlags = "playerflags",
     HostChange = "hostchange",

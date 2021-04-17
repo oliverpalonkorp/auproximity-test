@@ -1,5 +1,4 @@
 import { ColorID } from "@skeldjs/constant";
-import { Vector2 } from "@skeldjs/util";
 
 import { EventEmitter } from "events";
 import util from "util";
@@ -13,6 +12,7 @@ import { BackendEvent } from "../types/enums/BackendEvents";
 import { PlayerFlag } from "../types/enums/PlayerFlags";
 import { GameState } from "../types/enums/GameState";
 import { GameFlag } from "../types/enums/GameFlags";
+import { PlayerPose } from "../Client";
 
 export enum LogMode {
     Log = "log",
@@ -42,8 +42,12 @@ export abstract class BackendAdapter extends EventEmitter {
         logger[mode](chalk.grey("[" + BackendType[this.backendModel.backendType] + " " + this.gameID + "]"), formatted);
     }
 
-    emitPlayerPosition(name: string, position: Vector2): void {
-        this.emit(BackendEvent.PlayerPosition, { name, position });
+    emitPlayerPose(name: string, position: PlayerPose ): void {
+        this.emit(BackendEvent.PlayerPose, { name, position });
+    }
+
+    emitPlayerVent(name: string, ventid: number): void {
+        this.emit(BackendEvent.PlayerVent, { name, ventid });
     }
 
     emitPlayerColor(name: string, color: ColorID): void {

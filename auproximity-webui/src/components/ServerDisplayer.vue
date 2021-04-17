@@ -438,7 +438,10 @@ export default class ServerDisplayer extends Vue {
     const client: ClientModel = this.$store.state.clients.find((c: ClientModel) => c.uuid === stream.uuid)
     if (!client) return
 
-    if ((client.flags & PlayerFlag.IsDead) && !(myFlags & PlayerFlag.IsDead)) {
+    if (
+      (client.flags & PlayerFlag.IsDead) && // If the player is dead
+      !(myFlags & PlayerFlag.IsDead) // If I am not dead
+    ) {
       stream.gainNode.gain.value = 0
       stream.pannerNode.setPosition(0, 0, 0)
       return
