@@ -683,7 +683,7 @@ export default class PublicLobbyBackend extends BackendAdapter {
             this.client.on("player.entervent", ev => {
                 const { player, ventid } = ev.data;
                 if (player && player.data) {
-                    this.log(LogMode.Log, fmtName(player), "entered vent '" + this.getVentName(ventid) + ".");
+                    this.log(LogMode.Log, fmtName(player), "entered vent " + this.getVentName(ventid) + ".");
                     this.emitPlayerVent(player.data.name, ventid);
                 } else {
                     this.log(LogMode.Warn, "Someone entered a vent, but there was no data.");
@@ -693,7 +693,7 @@ export default class PublicLobbyBackend extends BackendAdapter {
             this.client.on("player.exitvent", ev => {
                 const { player, ventid } = ev.data;
                 if (player && player.data) {
-                    this.log(LogMode.Log, fmtName(player), "exited vent '" + this.getVentName(ventid) + ".");
+                    this.log(LogMode.Log, fmtName(player), "exited vent " + this.getVentName(ventid) + ".");
                     this.emitPlayerVent(player.data.name, -1);
                 } else {
                     this.log(LogMode.Warn, "Someone exited a vent, but there was no data.");
