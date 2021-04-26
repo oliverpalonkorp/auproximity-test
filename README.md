@@ -8,7 +8,7 @@ I have an open instance hosted at https://aupro.xyz.
 
 This software should be used for personal use on public lobbies. Anyone that wants to
 have a custom solution, private server, or other commercial use for this software should 
-send a direct message to `edward#8008` on Discord.
+send a direct message to `edward#7037` on Discord.
 
 ## Features
 - The software can connect to a public game to host proximity voice services
