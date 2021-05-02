@@ -40,7 +40,7 @@ const state: State = {
   options: {
     falloff: 4.5,
     falloffVision: false,
-    colliders: false,
+    colliders: true,
     paSystems: true,
     commsSabotage: true,
     meetingsCommsSabotage: true
