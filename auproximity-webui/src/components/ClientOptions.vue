@@ -38,13 +38,13 @@
           :disabled="!$store.state.joinedRoom"
           @change="updateOptions"
         ></v-checkbox>
-        <!--<v-checkbox
+        <v-checkbox
           label="Walls block voice"
           v-model="$store.state.options.colliders"
           :readonly="!amhost"
           :disabled="!$store.state.joinedRoom"
           @change="updateOptions"
-        ></v-checkbox>-->
+        ></v-checkbox>
         <v-checkbox
           label="Comms Sabotage"
           v-model="$store.state.options.commsSabotage"

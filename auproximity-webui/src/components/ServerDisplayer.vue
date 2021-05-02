@@ -283,7 +283,7 @@ export default class ServerDisplayer extends Vue {
     this.$store.state.options = {
       falloff: 4.5,
       falloffVision: false,
-      colliders: false,
+      colliders: true,
       paSystems: true
     }
     this.$store.state.clientOptions = {
@@ -490,7 +490,7 @@ export default class ServerDisplayer extends Vue {
   poseCollide (p1: Vector2, p2: Vector2) {
     for (const collider of colliderMaps[this.settings.map]) {
       const intersections = intersect(collider,
-        `M ${p1.x + 40} ${40 - p1.y} L ${p2.x + 40} ${40 - p2.y}`)
+        `M ${p1.x},${p1.y} L ${p2.x},${p2.y}`)
       if (intersections.length > 0) return true
     }
     return false
