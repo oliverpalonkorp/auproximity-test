@@ -1,4 +1,4 @@
-import { MapID } from '@skeldjs/constant'
+import { GameMap } from '@skeldjs/constant'
 
 export interface HostOptions {
   falloff: number;
@@ -11,7 +11,7 @@ export interface HostOptions {
 
 export interface GameSettings {
   crewmateVision: number;
-  map: MapID;
+  map: GameMap;
 }
 
 export interface ClientOptions {

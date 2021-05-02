@@ -967,22 +967,22 @@
     "@sentry/types" "6.2.5"
     tslib "^1.9.3"
 
-"@skeldjs/constant@^2.2.10":
-  version "2.6.3"
-  resolved "https://registry.yarnpkg.com/@skeldjs/constant/-/constant-2.6.3.tgz#dedd7d1163fd96ddc88c0012763dc9f214efb812"
-  integrity sha512-0iXZfYGIiF9XGq+UiPWuWxnIKxGNo5SD+f5JJJrqLmX6MTCfFyiXmCmsyaqvpQgg80tMY+e6mxawvs2Btjdfqg==
+"@skeldjs/constant@^2.6.18":
+  version "2.6.18"
+  resolved "https://registry.yarnpkg.com/@skeldjs/constant/-/constant-2.6.18.tgz#95bfb06d6b914fbbd39f62df185d58c60506c4b2"
+  integrity sha512-3a93qfIzfcovVifW0EpaJTqHckSHjlnI6BpxOtWuSfICcQ1Irl5i1iiSBwlineNqssY6XvVvdlAn8kXe1Vj2FQ==
   dependencies:
-    "@skeldjs/util" "^2.6.3"
+    "@skeldjs/util" "2.6.18"
+
+"@skeldjs/util@2.6.18":
+  version "2.6.18"
+  resolved "https://registry.yarnpkg.com/@skeldjs/util/-/util-2.6.18.tgz#bb35680ef2b788db0baa2b0455f599c245da4bd6"
+  integrity sha512-iwlkPCLnvIto/A7SHAHW8FSWMJX6eYYyo6q3N++ZEGPSddF+53vlzehKeh0ASSOdFyq23v+NE1Hz9SbYfM+z5A==
 
 "@skeldjs/util@^2.5.2":
   version "2.5.2"
   resolved "https://registry.yarnpkg.com/@skeldjs/util/-/util-2.5.2.tgz#e746e57579697dd030baf29f3570faf68a45952b"
   integrity sha512-j1H733gvfRYSq5NHIpInlTV92n5WfvGCoL4JVMe1kL63Vn+GA0hSA9aVjZOtnR1YcHeMpa7sNY5HC+8AncsPQQ==
-
-"@skeldjs/util@^2.6.3":
-  version "2.6.3"
-  resolved "https://registry.yarnpkg.com/@skeldjs/util/-/util-2.6.3.tgz#42f25c77483600aaa9729ed668fdefefa719f3b3"
-  integrity sha512-/VTBiME21XAH4zAM6ZoouCyYND8avg8ZplgvZbMSwxd06DM0KwEvD3rGPTC6ILbdon+MqOvZz3wE1oelUZMbdg==
 
 "@soda/friendly-errors-webpack-plugin@^1.7.1":
   version "1.8.0"
@@ -9099,10 +9099,8 @@ watchpack@^1.7.4:
   resolved "https://registry.yarnpkg.com/watchpack/-/watchpack-1.7.5.tgz#1267e6c55e0b9b5be44c2023aed5437a2c26c453"
   integrity sha512-9P3MWk6SrKjHsGkLT2KHXdQ/9SNkyoJbabxnKOoJepsvJjJG8uYTR3yTPxPQvNDI3w4Nz1xnE0TLHK4RIVe/MQ==
   dependencies:
-    chokidar "^3.4.1"
     graceful-fs "^4.1.2"
     neo-async "^2.5.0"
-    watchpack-chokidar2 "^2.0.1"
   optionalDependencies:
     chokidar "^3.4.1"
     watchpack-chokidar2 "^2.0.1"
