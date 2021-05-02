@@ -1,6 +1,6 @@
 import { Socket } from "socket.io";
 
-import { ColorID } from "@skeldjs/constant";
+import { Color } from "@skeldjs/constant";
 
 import {
     BackendModel,
@@ -33,7 +33,7 @@ export interface PlayerPose {
 export interface PlayerModel {
     name: string;
     position: PlayerPose;
-    color: ColorID;
+    color: Color;
     flags: number;
     ventid: number;
 }
@@ -136,7 +136,7 @@ export default class Client implements ClientBase {
         this.socket.emit(ClientSocketEvents.SyncAllClients, array);
     }
 
-    addClient(uuid: string, name: string, position: PlayerPose, color: ColorID): void {
+    addClient(uuid: string, name: string, position: PlayerPose, color: Color): void {
         this.socket.emit(ClientSocketEvents.AddClient, {
             uuid,
             name,
@@ -157,7 +157,7 @@ export default class Client implements ClientBase {
         this.socket.emit(ClientSocketEvents.SetVentOf, { uuid, ventid });
     }
 
-    setColorOf(uuid: string, color: ColorID): void {
+    setColorOf(uuid: string, color: Color): void {
         this.socket.emit(ClientSocketEvents.SetColorOf, { uuid, color });
     }
 

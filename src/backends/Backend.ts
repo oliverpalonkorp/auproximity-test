@@ -1,4 +1,4 @@
-import { ColorID } from "@skeldjs/constant";
+import { Color } from "@skeldjs/constant";
 
 import { EventEmitter } from "events";
 import util from "util";
@@ -50,7 +50,7 @@ export abstract class BackendAdapter extends EventEmitter {
         this.emit(BackendEvent.PlayerVent, { name, ventid });
     }
 
-    emitPlayerColor(name: string, color: ColorID): void {
+    emitPlayerColor(name: string, color: Color): void {
         this.emit(BackendEvent.PlayerColor, { name, color });
     }
 

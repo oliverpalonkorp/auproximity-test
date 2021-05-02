@@ -1,4 +1,4 @@
-import { ColorID, MapID } from "@skeldjs/constant";
+import { Color, GameMap } from "@skeldjs/constant";
 
 import { BackendEvent } from "./types/enums/BackendEvents";
 
@@ -33,7 +33,7 @@ export default class Room {
     public clients: Client[] = [];
     public bans: Set<string> = new Set;
 
-    map: MapID;
+    map: GameMap;
     hostname: string;
     flags = 0;
     state: GameState = GameState.Lobby;
@@ -47,7 +47,7 @@ export default class Room {
     };
     settings: GameSettings = {
         crewmateVision: 1,
-        map: MapID.TheSkeld
+        map: GameMap.TheSkeld
     };
     players = new Map<string, PlayerModel>();
 
@@ -91,7 +91,7 @@ export default class Room {
             }
         });
 
-        this.backendAdapter.on(BackendEvent.PlayerColor, (payload: { name: string; color: ColorID }) => {
+        this.backendAdapter.on(BackendEvent.PlayerColor, (payload: { name: string; color: Color }) => {
             const client = this.getClientByName(payload.name);
             const player = this.getPlayerByName(payload.name);
 

@@ -60,18 +60,18 @@ export default class MyClientListItem extends Vue {
   mic!: MyMicModel;
 
   Colors = {
-    [ColorID.Red]: '#c61111',
-    [ColorID.Blue]: '#132ed2',
-    [ColorID.DarkGreen]: '#11802d',
-    [ColorID.Pink]: '#ee54bb',
-    [ColorID.Orange]: '#f07d0d',
-    [ColorID.Yellow]: '#f6f657',
-    [ColorID.Black]: '#3f474e',
-    [ColorID.White]: '#d7e1f1',
-    [ColorID.Purple]: '#6b2fbc',
-    [ColorID.Brown]: '#71491e',
-    [ColorID.Cyan]: '#38ffdd',
-    [ColorID.Lime]: '#50f039'
+    [ColorID.Red]: '#7a0838',
+    [ColorID.Blue]: '#09158e',
+    [ColorID.DarkGreen]: '#0a4d2e',
+    [ColorID.Pink]: '#ac2bae',
+    [ColorID.Orange]: '#b43e15',
+    [ColorID.Yellow]: '#c38822',
+    [ColorID.Black]: '#1e1f26',
+    [ColorID.White]: '#8495c0',
+    [ColorID.Purple]: '#3b177c',
+    [ColorID.Brown]: '#5e2615',
+    [ColorID.Cyan]: '#24a9bf',
+    [ColorID.Lime]: '#15a842'
   }
 
   get streamVolume () {
