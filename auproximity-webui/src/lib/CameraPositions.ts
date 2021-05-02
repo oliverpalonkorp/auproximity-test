@@ -1,8 +1,8 @@
-import { MapID } from '@skeldjs/constant'
+import { GameMap } from '@skeldjs/constant'
 import { Vector2 } from '@skeldjs/util'
 
 export const CameraPositions = {
-  [MapID.TheSkeld]: [
+  [GameMap.TheSkeld]: [
     {
       x: -17.8,
       y: -4.8
@@ -20,8 +20,8 @@ export const CameraPositions = {
       y: -6.5
     }
   ],
-  [MapID.MiraHQ]: [],
-  [MapID.Polus]: [
+  [GameMap.MiraHQ]: [],
+  [GameMap.Polus]: [
     {
       x: 4.8,
       y: -22.6
@@ -43,11 +43,11 @@ export const CameraPositions = {
       y: -15.6
     }
   ],
-  [MapID.AprilFoolsTheSkeld]: [],
-  [MapID.Airship]: []
+  [GameMap.AprilFoolsTheSkeld]: [],
+  [GameMap.Airship]: []
 }
 
-export function getClosestCamera (position: Vector2, map: MapID) {
+export function getClosestCamera (position: Vector2, map: GameMap) {
   const cameras = CameraPositions[map]
 
   if (cameras.length) {

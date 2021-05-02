@@ -50,7 +50,7 @@
 <script lang="ts">
 import { Component, Vue } from 'vue-property-decorator'
 import { Socket } from 'vue-socket.io-extended'
-import { MapID } from '@skeldjs/constant'
+import { GameMap } from '@skeldjs/constant'
 import { Vector2 } from '@skeldjs/util'
 import Peer from 'peerjs'
 import intersect from 'path-intersection'
@@ -92,7 +92,7 @@ export default class ServerDisplayer extends Vue {
 
   settings: GameSettings = {
     crewmateVision: 1,
-    map: MapID.TheSkeld
+    map: GameMap.TheSkeld
   };
 
   /**
