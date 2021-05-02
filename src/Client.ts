@@ -85,7 +85,6 @@ export default class Client implements ClientBase {
 
         this.name = name;
 
-
         if (state.isClosing) {
             await this.sendError("AUProximity is currently undergoing maintenence, please try again in a few minutes.", true);
             return;
