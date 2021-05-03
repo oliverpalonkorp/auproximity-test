@@ -143,84 +143,84 @@
   resolved "https://registry.yarnpkg.com/@sindresorhus/is/-/is-0.14.0.tgz#9fb3a3cf3132328151f353de4632e01e52102bea"
   integrity sha512-9NET910DNaIPngYnLLPeg+Ogzqsi9uM4mSboU5y6p8S5DzMTVEsJZrawi+BoDNUVBa2DhJqQYUFvMDfgU062LQ==
 
-"@skeldjs/client@2.6.18", "@skeldjs/client@^2.6.18":
-  version "2.6.18"
-  resolved "https://registry.yarnpkg.com/@skeldjs/client/-/client-2.6.18.tgz#1da87ffabab8490e669978b7c2bcae47b4781462"
-  integrity sha512-IJCBSbLpUfz6sskUeogo09oOvx5uwpXOJAU7z4h/L8TAlzg/a9CQXpPO+TOi8jGrBLKNS5C9zL4w2yJMt7Le4g==
+"@skeldjs/client@2.6.19", "@skeldjs/client@^2.6.19":
+  version "2.6.19"
+  resolved "https://registry.yarnpkg.com/@skeldjs/client/-/client-2.6.19.tgz#7002c8bde22fe4abb53a7d70d20c3df860ab5abe"
+  integrity sha512-LLfxm/M3Y4dnaEdDSvYfQX0ea+HSqM/f7PqEsSIJI4wRSnuYj1dvj2cyMAZm/lRQHqv/kpzjPplEkHwq8oyhZQ==
   dependencies:
-    "@skeldjs/constant" "2.6.18"
-    "@skeldjs/core" "2.6.18"
-    "@skeldjs/data" "2.6.18"
-    "@skeldjs/events" "2.6.18"
-    "@skeldjs/protocol" "2.6.18"
-    "@skeldjs/state" "2.6.18"
-    "@skeldjs/util" "2.6.18"
+    "@skeldjs/constant" "2.6.19"
+    "@skeldjs/core" "2.6.19"
+    "@skeldjs/data" "2.6.20"
+    "@skeldjs/events" "2.6.20"
+    "@skeldjs/protocol" "2.6.20"
+    "@skeldjs/state" "2.6.20"
+    "@skeldjs/util" "2.6.19"
 
-"@skeldjs/constant@2.6.18", "@skeldjs/constant@^2.6.18":
-  version "2.6.18"
-  resolved "https://registry.yarnpkg.com/@skeldjs/constant/-/constant-2.6.18.tgz#95bfb06d6b914fbbd39f62df185d58c60506c4b2"
-  integrity sha512-3a93qfIzfcovVifW0EpaJTqHckSHjlnI6BpxOtWuSfICcQ1Irl5i1iiSBwlineNqssY6XvVvdlAn8kXe1Vj2FQ==
+"@skeldjs/constant@2.6.19", "@skeldjs/constant@^2.6.19":
+  version "2.6.19"
+  resolved "https://registry.yarnpkg.com/@skeldjs/constant/-/constant-2.6.19.tgz#b5939afe8d34fc46266d4560c69a7ae59d57b62a"
+  integrity sha512-+wxYV/lXJ5LZK+B/w/ISSBYcugxFEf7iJ2x7NSx5VHKMavvKPKW2jhB1bmGeIWGOi0trrWfKIigXPLCkuzzTVQ==
   dependencies:
-    "@skeldjs/util" "2.6.18"
+    "@skeldjs/util" "2.6.19"
 
-"@skeldjs/core@2.6.18", "@skeldjs/core@^2.6.18":
-  version "2.6.18"
-  resolved "https://registry.yarnpkg.com/@skeldjs/core/-/core-2.6.18.tgz#a59c2884a13a84310544f8d239cf249b59904e1c"
-  integrity sha512-SpMKvpC0mrGBemRZ9yuujY+RtC0rwPUkQ5UKJ0vrrX9IQJizcBSN5d6yE/3jfI37/5p2f++Hglsipw2usVKDtw==
+"@skeldjs/core@2.6.19", "@skeldjs/core@^2.6.19":
+  version "2.6.19"
+  resolved "https://registry.yarnpkg.com/@skeldjs/core/-/core-2.6.19.tgz#bbdf4297aa7fbc6f453c2027d9f41d2601e40614"
+  integrity sha512-HyIyAA5xf+DZ1TdbSVezuVk6Rm93E5XpvsFJpAyrs3kaBsd8cS+A9A6CXqSZN8U0ku0nMPj1l6giUmz8I7NYwQ==
   dependencies:
-    "@skeldjs/constant" "2.6.18"
-    "@skeldjs/data" "2.6.18"
-    "@skeldjs/events" "2.6.18"
-    "@skeldjs/protocol" "2.6.18"
-    "@skeldjs/util" "2.6.18"
+    "@skeldjs/constant" "2.6.19"
+    "@skeldjs/data" "2.6.20"
+    "@skeldjs/events" "2.6.20"
+    "@skeldjs/protocol" "2.6.20"
+    "@skeldjs/util" "2.6.19"
 
-"@skeldjs/data@2.6.18":
-  version "2.6.18"
-  resolved "https://registry.yarnpkg.com/@skeldjs/data/-/data-2.6.18.tgz#db88c487220010f0990f0cf26acc41ca274ff7f0"
-  integrity sha512-X6lW5n2qQw91TqNitlmwuDjYmrfKtWFu94JtUg20RTn8MQxKGUOC8alEUdemlm/ieAmCWaQcIC618S2uvTS6+w==
+"@skeldjs/data@2.6.20":
+  version "2.6.20"
+  resolved "https://registry.yarnpkg.com/@skeldjs/data/-/data-2.6.20.tgz#609c77ce36d42f3d4af69cebc38c3616901e6005"
+  integrity sha512-qXQawBV0mXVJ/sxnrLRokFO3yml8oTZTmQzP/oP4ceC9s2J8JbFwDPzuT0ig61hKBWR/f6RcfRAlaZloti37OQ==
   dependencies:
-    "@skeldjs/constant" "2.6.18"
-    "@skeldjs/util" "2.6.18"
+    "@skeldjs/constant" "2.6.19"
+    "@skeldjs/util" "2.6.19"
 
-"@skeldjs/events@2.6.18":
-  version "2.6.18"
-  resolved "https://registry.yarnpkg.com/@skeldjs/events/-/events-2.6.18.tgz#4ee4c08f221b3929b6c852cefc4c0ea46347ddb3"
-  integrity sha512-7Ajca2btZRbSJPxy/8izHsq+o6p42AbchfaCspIG7qike79Yppi/66UkLa3KudRDYw+HwfvV7WJlV16Z67cTMw==
+"@skeldjs/events@2.6.20":
+  version "2.6.20"
+  resolved "https://registry.yarnpkg.com/@skeldjs/events/-/events-2.6.20.tgz#5c54c0e64dcb5cc9166d9a3aa0a1ff8f9a915ae8"
+  integrity sha512-NxHpZwvhxmQpV8m3hfjeCgS7u32F0OifaGUpK8HaqYrqXiTSitFo6UFvslCPUc1ImXs5HngTmiuPSmk9bqu/zQ==
 
-"@skeldjs/get-auth-token@^2.6.18":
-  version "2.6.18"
-  resolved "https://registry.yarnpkg.com/@skeldjs/get-auth-token/-/get-auth-token-2.6.18.tgz#eea2fbc5984a297f46c5195f24bba19995dcc9c8"
-  integrity sha512-ywBdOqe8owySQP1MU+XIaZB9SD6FiW1Mbj702CU0GfSFb8xvDEqICnjoT/UzX4HnkcGlptaWIrD7fVrTJrOnvw==
+"@skeldjs/get-auth-token@^2.6.19":
+  version "2.6.20"
+  resolved "https://registry.yarnpkg.com/@skeldjs/get-auth-token/-/get-auth-token-2.6.20.tgz#9444783561ae68487b2b1ca4e128fc0eb8ce357c"
+  integrity sha512-W3W5BL91zX8hNMxwyGATXZ/MDwitB3iPICOrK3lniSZy2NNI+sYdj0cxATRnWI9SvdoKpXpd31U6ky0fE/BPTA==
   dependencies:
-    "@skeldjs/client" "2.6.18"
-    "@skeldjs/util" "2.6.18"
+    "@skeldjs/client" "2.6.19"
+    "@skeldjs/util" "2.6.19"
 
-"@skeldjs/protocol@2.6.18", "@skeldjs/protocol@^2.6.18":
-  version "2.6.18"
-  resolved "https://registry.yarnpkg.com/@skeldjs/protocol/-/protocol-2.6.18.tgz#d1b751dd8103284958e86d361892af5c6ed03f53"
-  integrity sha512-uEWEEWLofUJrKyTS9rvwhFNTLWDJ0zG1YBvaPy8pUhfFYO96ctxc4ptaAQuxWyLwMhLbcXsso1qydVezJyEYcA==
+"@skeldjs/protocol@2.6.20", "@skeldjs/protocol@^2.6.19":
+  version "2.6.20"
+  resolved "https://registry.yarnpkg.com/@skeldjs/protocol/-/protocol-2.6.20.tgz#a25c0b2b4436a5f89098c093eb6be659a5ef915b"
+  integrity sha512-vEYViAxF/WmRCoQD7REJKf6a4SB0wwTrocmDqccNYLda90ESBqjOtSqDUT5U9zcXsqc55z1Fr6+3+DCyFBa6jA==
   dependencies:
-    "@skeldjs/constant" "2.6.18"
-    "@skeldjs/util" "2.6.18"
+    "@skeldjs/constant" "2.6.19"
+    "@skeldjs/util" "2.6.19"
 
-"@skeldjs/state@2.6.18":
-  version "2.6.18"
-  resolved "https://registry.yarnpkg.com/@skeldjs/state/-/state-2.6.18.tgz#57e2f832f79ca20a675312e844f8e426bdacbc66"
-  integrity sha512-La/9QXA8pNzbLxZrKH0Cuq6PNcNKvFAzc71jIgaffsBz5oegC6PvbljtmUR7ouXEorrErtvPl6qur7lbxZnSCA==
+"@skeldjs/state@2.6.20":
+  version "2.6.20"
+  resolved "https://registry.yarnpkg.com/@skeldjs/state/-/state-2.6.20.tgz#35ba7806934e5159684736ed946d86493e649f79"
+  integrity sha512-crijXXt9GEC9myGCA0tUAwcFxY9su9qwJDJkNQJtIfdROWdQKKsK8VdRvNJ/aofuuMi1OWn05W8h6m7jzi70pw==
   dependencies:
-    "@skeldjs/core" "2.6.18"
-    "@skeldjs/protocol" "2.6.18"
-    "@skeldjs/util" "2.6.18"
+    "@skeldjs/core" "2.6.19"
+    "@skeldjs/protocol" "2.6.20"
+    "@skeldjs/util" "2.6.19"
 
-"@skeldjs/text@^2.6.18":
-  version "2.6.18"
-  resolved "https://registry.yarnpkg.com/@skeldjs/text/-/text-2.6.18.tgz#c8b7660515365edd7419ad44333759c59a0f42f4"
-  integrity sha512-V3Ral839QH91Fy7Iid9ASww9gDLlhbkp12/IYtfT/QQxEtzP5cXLDO1hL0qZ9rYfdi5Ysk/EWe5CTKcMYJ1YqQ==
+"@skeldjs/text@^2.6.19":
+  version "2.6.20"
+  resolved "https://registry.yarnpkg.com/@skeldjs/text/-/text-2.6.20.tgz#7eced075c65188c8993e6a8100163cc43de020e2"
+  integrity sha512-6atRcU9VquLwUZX2dklDWTjwljp7o8JxDaI1w1U0BjkK6lzn8W0uUBZqZYnZRhG3aK5X5KJ7LUKKYHameZYiEA==
 
-"@skeldjs/util@2.6.18", "@skeldjs/util@^2.6.18":
-  version "2.6.18"
-  resolved "https://registry.yarnpkg.com/@skeldjs/util/-/util-2.6.18.tgz#bb35680ef2b788db0baa2b0455f599c245da4bd6"
-  integrity sha512-iwlkPCLnvIto/A7SHAHW8FSWMJX6eYYyo6q3N++ZEGPSddF+53vlzehKeh0ASSOdFyq23v+NE1Hz9SbYfM+z5A==
+"@skeldjs/util@2.6.19", "@skeldjs/util@^2.6.19":
+  version "2.6.19"
+  resolved "https://registry.yarnpkg.com/@skeldjs/util/-/util-2.6.19.tgz#368f207b2c09466a9e6765eb185c799bfd6ad5c7"
+  integrity sha512-74gUpy0GEXDyFquI3XkOY5Crr3+ariiO4l0jekeX0r7XfeiKaFFTAr8MIz7y9ndstlK2nvgDx+0ytimeVhaJmQ==
 
 "@szmarczak/http-timer@^1.1.2":
   version "1.1.2"
@@ -2918,10 +2918,10 @@ typedarray-to-buffer@^3.1.5:
   dependencies:
     is-typedarray "^1.0.0"
 
-typescript@^4.0.5:
-  version "4.2.3"
-  resolved "https://registry.yarnpkg.com/typescript/-/typescript-4.2.3.tgz#39062d8019912d43726298f09493d598048c1ce3"
-  integrity sha512-qOcYwxaByStAWrBf4x0fibwZvMRG+r4cQoTjbPtUlrWjBHbmCAww1i448U0GJ+3cNNEtebDteo/cHOR3xJ4wEw==
+typescript@^4.2.4:
+  version "4.2.4"
+  resolved "https://registry.yarnpkg.com/typescript/-/typescript-4.2.4.tgz#8610b59747de028fda898a8aef0e103f156d0961"
+  integrity sha512-V+evlYHZnQkaz8TRBuxTA92yZBPotr5H+WhQ7bD3hZUndx5tGOa1fuCgeSjxAzM1RiN5IzvadIXTVefuuwZCRg==
 
 unbox-primitive@^1.0.0:
   version "1.0.1"
