@@ -1,23 +1,23 @@
 <template>
-  <v-card>
-    <div class="text-center py-5">
-      <h3>Join Discord Server</h3>
-    </div>
-    <div class="pa-4 pb-7 text-center">
-      <a class="discordbutton" :href="discordLink" target="_blank">
-        <img src="@/assets/discordlogo.svg">
-      </a>
-    </div>
-  </v-card>
+	<v-card>
+		<div class="text-center py-5">
+			<h3>Join Discord Server</h3>
+		</div>
+		<div class="pa-4 pb-7 text-center">
+			<a class="discordbutton" :href="discordLink" target="_blank">
+				<img src="@/assets/discordlogo.svg" />
+			</a>
+		</div>
+	</v-card>
 </template>
 
 <script lang="ts">
-import { Component, Prop, Vue } from 'vue-property-decorator'
+import { Component, Prop, Vue } from "vue-property-decorator";
 
 @Component({})
 export default class DiscordServer extends Vue {
-  @Prop()
-  discordLink!: string;
+	@Prop()
+	discordLink!: string;
 }
 </script>
 <style scoped lang="stylus">

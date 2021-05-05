@@ -1,23 +1,23 @@
 <template>
-  <v-card>
-    <div class="text-center py-5">
-      <h3>Star on Github</h3>
-    </div>
-    <div class="pa-2 pb-4 text-center">
-      <a class="githubbutton" :href="githubLink" target="_blank">
-        <img src="@/assets/githublogo.png">
-      </a>
-    </div>
-  </v-card>
+	<v-card>
+		<div class="text-center py-5">
+			<h3>Star on Github</h3>
+		</div>
+		<div class="pa-2 pb-4 text-center">
+			<a class="githubbutton" :href="githubLink" target="_blank">
+				<img src="@/assets/githublogo.png" />
+			</a>
+		</div>
+	</v-card>
 </template>
 
 <script lang="ts">
-import { Component, Prop, Vue } from 'vue-property-decorator'
+import { Component, Prop, Vue } from "vue-property-decorator";
 
 @Component({})
 export default class GithubStar extends Vue {
-  @Prop()
-  githubLink!: string;
+	@Prop()
+	githubLink!: string;
 }
 </script>
 <style scoped lang="stylus">

@@ -15,66 +15,75 @@ import { GameFlag } from "../types/enums/GameFlags";
 import { PlayerPose } from "../Client";
 
 export enum LogMode {
-    Log = "log",
-    Info = "info",
-    Success = "success",
-    Fatal = "fatal",
-    Warn = "warn",
-    Error = "error"
+	Log = "log",
+	Info = "info",
+	Success = "success",
+	Fatal = "fatal",
+	Warn = "warn",
+	Error = "error",
 }
 
 // Actual backend class
 export abstract class BackendAdapter extends EventEmitter {
-    abstract backendModel: BackendModel;
-    destroyed: boolean;
-    gameID: string;
-    
-    protected constructor() {
-        super();
-    }
+	abstract backendModel: BackendModel;
+	destroyed: boolean;
+	gameID: string;
 
-    abstract initialize(): void;
-    abstract destroy(): void;
-    
-    log(mode: LogMode, format: string, ...params: unknown[]): void {
-        const formatted = util.format(format, ...params);
+	protected constructor() {
+		super();
+	}
 
-        logger[mode](chalk.grey("[" + BackendType[this.backendModel.backendType] + " " + this.gameID + "]"), formatted);
-    }
+	abstract initialize(): void;
+	abstract destroy(): void;
 
-    emitPlayerPose(name: string, position: PlayerPose ): void {
-        this.emit(BackendEvent.PlayerPose, { name, position });
-    }
+	log(mode: LogMode, format: string, ...params: unknown[]): void {
+		const formatted = util.format(format, ...params);
 
-    emitPlayerVent(name: string, ventid: number): void {
-        this.emit(BackendEvent.PlayerVent, { name, ventid });
-    }
+		logger[mode](
+			chalk.grey(
+				"[" +
+					BackendType[this.backendModel.backendType] +
+					" " +
+					this.gameID +
+					"]"
+			),
+			formatted
+		);
+	}
 
-    emitPlayerColor(name: string, color: Color): void {
-        this.emit(BackendEvent.PlayerColor, { name, color });
-    }
+	emitPlayerPose(name: string, position: PlayerPose): void {
+		this.emit(BackendEvent.PlayerPose, { name, position });
+	}
 
-    emitPlayerFlags(name: string, flags: PlayerFlag, set: boolean): void {
-        this.emit(BackendEvent.PlayerFlags, { name, flags, set });
-    }
+	emitPlayerVent(name: string, ventid: number): void {
+		this.emit(BackendEvent.PlayerVent, { name, ventid });
+	}
 
-    emitHostChange(name: string): void {
-        this.emit(BackendEvent.HostChange, { name });
-    }
+	emitPlayerColor(name: string, color: Color): void {
+		this.emit(BackendEvent.PlayerColor, { name, color });
+	}
 
-    emitGameState(state: GameState): void {
-        this.emit(BackendEvent.GameState, { state });
-    }
+	emitPlayerFlags(name: string, flags: PlayerFlag, set: boolean): void {
+		this.emit(BackendEvent.PlayerFlags, { name, flags, set });
+	}
 
-    emitGameFlags(flags: GameFlag, set: boolean): void {
-        this.emit(BackendEvent.GameFlags, { flags, set });
-    }
+	emitHostChange(name: string): void {
+		this.emit(BackendEvent.HostChange, { name });
+	}
 
-    emitSettingsUpdate(settings: GameSettings): void {
-        this.emit(BackendEvent.SettingsUpdate, { settings });
-    }
+	emitGameState(state: GameState): void {
+		this.emit(BackendEvent.GameState, { state });
+	}
 
-    emitError(err: string, fatal: boolean): void {
-        this.emit(BackendEvent.Error, { err, fatal });
-    }
+	emitGameFlags(flags: GameFlag, set: boolean): void {
+		this.emit(BackendEvent.GameFlags, { flags, set });
+	}
+
+	emitSettingsUpdate(settings: GameSettings): void {
+		this.emit(BackendEvent.SettingsUpdate, { settings });
+	}
+
+	emitError(err: string, fatal: boolean): void {
+		this.emit(BackendEvent.Error, { err, fatal });
+	}
 }
