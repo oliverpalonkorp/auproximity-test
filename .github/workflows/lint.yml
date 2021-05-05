@@ -25,5 +25,6 @@ jobs:
           node-version: ${{ matrix.node-version }}
       - run: npm install -g yarn
       - run: yarn
+      - run: yarn --cwd auproximity-webui
       - run: yarn eslint . --ext .ts,.vue
       - run: yarn prettier --check .
