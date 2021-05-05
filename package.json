@@ -15,7 +15,8 @@
 		"build:docker": "docker build -t auproxy-backend .",
 		"start": "node ./dist/main.js",
 		"lint": "eslint ./src/**/*.ts --fix && prettier --write .",
-		"heroku-postbuild": "yarn build && YARN_PRODUCTION=false yarn --cwd auproximity-webui install && yarn --cwd auproximity-webui build && mkdir -p dist/dist && cp -r auproximity-webui/dist dist"
+		"heroku-postbuild": "yarn build && YARN_PRODUCTION=false yarn --cwd auproximity-webui install && yarn --cwd auproximity-webui build && mkdir -p dist/dist && cp -r auproximity-webui/dist dist",
+		"prepare": "husky install"
 	},
 	"dependencies": {
 		"@microsoft/signalr": "^5.0.0",
@@ -52,6 +53,8 @@
 		"eslint-config-prettier": "^8.3.0",
 		"eslint-plugin-import": "^2.22.1",
 		"eslint-plugin-promise": "^4.2.1",
+		"husky": "^6",
+		"lint-staged": "^10",
 		"loadash": "^1.0.0",
 		"nodemon": "^2.0.6",
 		"prettier": "2.2.1",
@@ -85,5 +88,9 @@
 	},
 	"engines": {
 		"node": "14.x"
+	},
+	"lint-staged": {
+		"*.ts": "eslint --cache --fix",
+		"*.{json,md,ts,vue,yaml}": "prettier --write"
 	}
 }
