@@ -1,5 +1,5 @@
 export enum GameState {
-    Lobby,
-    Game,
-    Meeting
+	Lobby,
+	Game,
+	Meeting,
 }

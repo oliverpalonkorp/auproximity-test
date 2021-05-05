@@ -1,30 +1,30 @@
-import { GameMap } from '@skeldjs/constant'
+import { GameMap } from "@skeldjs/constant";
 
 export interface HostOptions {
-  falloff: number;
-  falloffVision: boolean;
-  colliders: boolean;
-  paSystems: boolean;
-  commsSabotage: boolean;
-  meetingsCommsSabotage: boolean;
+	falloff: number;
+	falloffVision: boolean;
+	colliders: boolean;
+	paSystems: boolean;
+	commsSabotage: boolean;
+	meetingsCommsSabotage: boolean;
 }
 
 export interface GameSettings {
-  crewmateVision: number;
-  map: GameMap;
+	crewmateVision: number;
+	map: GameMap;
 }
 
 export interface ClientOptions {
-    omniscientGhosts: boolean;
+	omniscientGhosts: boolean;
 }
 
 export enum GameState {
-  Lobby,
-  Game,
-  Meeting
+	Lobby,
+	Game,
+	Meeting,
 }
 
 export enum GameFlag {
-  None = 0,
-  CommsSabotaged = 1
+	None = 0,
+	CommsSabotaged = 1,
 }

@@ -1,7 +1,6 @@
-# This workflow will do a clean install of node dependencies, build the source code and run tests across different versions of node
-# For more information see: https://help.github.com/actions/language-and-framework-guides/using-nodejs-with-github-actions
+# This workflow ensures that code style is kept consistent by running formatting and linting tools
 
-name: Build
+name: Lint
 
 on:
   push:
@@ -26,4 +25,5 @@ jobs:
           node-version: ${{ matrix.node-version }}
       - run: npm install -g yarn
       - run: yarn
-      - run: yarn heroku-postbuild
+      - run: yarn eslint . --ext .ts,.vue
+      - run: yarn prettier --check .

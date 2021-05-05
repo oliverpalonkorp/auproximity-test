@@ -1,5 +1,5 @@
 export enum PublicLobbyRegion {
-    NorthAmerica = "NA",
-    Europe = "EU",
-    Asia = "AS"
+	NorthAmerica = "NA",
+	Europe = "EU",
+	Asia = "AS",
 }

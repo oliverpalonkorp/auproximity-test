@@ -1,9 +1,6 @@
 {
-  "name": "AUProximity",
-  "description": "Proximity voice chat platform for Among Us",
-  "repository": "https://github.com/cybershard/auproximity",
-  "keywords": [
-    "node",
-    "among us"
-  ]
+	"name": "AUProximity",
+	"description": "Proximity voice chat platform for Among Us",
+	"repository": "https://github.com/cybershard/auproximity",
+	"keywords": ["node", "among us"]
 }
