@@ -64,15 +64,13 @@
     "extends": [
       "plugin:vue/essential",
       "@vue/standard",
-      "@vue/typescript/recommended"
+      "@vue/typescript/recommended",
+      "prettier"
     ],
     "parserOptions": {
       "ecmaVersion": 2020
     },
-    "rules": {
-      "quotes": "error",
-      "semi": "error"
-    }
+    "rules": {}
   },
   "browserslist": [
     "> 1%",

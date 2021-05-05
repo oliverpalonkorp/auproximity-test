@@ -14,7 +14,7 @@
     "build": "cross-env NODE_ENV=production tsc -p ./",
     "build:docker": "docker build -t auproxy-backend .",
     "start": "node ./dist/main.js",
-    "lint": "eslint ./src/**/*.ts --fix",
+    "lint": "eslint ./src/**/*.ts --fix && prettier --write .",
     "heroku-postbuild": "yarn build && YARN_PRODUCTION=false yarn --cwd auproximity-webui install && yarn --cwd auproximity-webui build && mkdir -p dist/dist && cp -r auproximity-webui/dist dist"
   },
   "dependencies": {
@@ -49,10 +49,12 @@
     "cross-env": "^7.0.2",
     "del": "^6.0.0",
     "eslint": "^7.13.0",
+    "eslint-config-prettier": "^8.3.0",
     "eslint-plugin-import": "^2.22.1",
     "eslint-plugin-promise": "^4.2.1",
     "loadash": "^1.0.0",
     "nodemon": "^2.0.6",
+    "prettier": "2.2.1",
     "ts-node": "^9.0.0",
     "typescript": "^4.2.4"
   },
@@ -69,7 +71,8 @@
       "eslint:recommended",
       "plugin:promise/recommended",
       "plugin:@typescript-eslint/recommended",
-      "plugin:import/typescript"
+      "plugin:import/typescript",
+      "prettier"
     ],
     "parserOptions": {
       "ecmaVersion": 2020
