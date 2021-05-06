@@ -60,7 +60,6 @@
 import { Component, Vue } from "vue-property-decorator";
 import { Socket } from "vue-socket.io-extended";
 import { GameMap } from "@skeldjs/constant";
-import { Vector2 } from "@skeldjs/util";
 import Peer from "peerjs";
 import intersect from "path-intersection";
 
@@ -70,6 +69,7 @@ import {
 	ClientModel,
 	RemoteStreamModel,
 	PlayerFlag,
+	PlayerPose,
 } from "@/models/ClientModel";
 import { BackendType } from "@/models/BackendModel";
 import { colliderMaps } from "@/lib/ColliderMaps";
@@ -449,7 +449,7 @@ export default class ServerDisplayer extends Vue {
 	}
 
 	@Socket(ClientSocketEvents.SetPositionOf)
-	onSetPositionOf(payload: { uuid: string; position: Vector2 }) {
+	onSetPositionOf(payload: { uuid: string; position: PlayerPose }) {
 		if (this.$store.state.gameState !== GameState.Meeting) {
 			if (this.$store.state.me.uuid === payload.uuid) {
 				this.remoteStreams.forEach((s) => {
@@ -534,8 +534,8 @@ export default class ServerDisplayer extends Vue {
 
 	setGainAndPan(
 		stream: { uuid: string; gainNode: GainNode; pannerNode: PannerNode },
-		p1: Vector2,
-		p2: Vector2
+		p1: PlayerPose,
+		p2: PlayerPose
 	) {
 		if (this.poseCollide(p1, p2) && this.$store.state.options.colliders) {
 			stream.gainNode.gain.value = 0;
@@ -546,7 +546,7 @@ export default class ServerDisplayer extends Vue {
 		}
 	}
 
-	poseCollide(p1: Vector2, p2: Vector2) {
+	poseCollide(p1: PlayerPose, p2: PlayerPose) {
 		for (const collider of colliderMaps[this.settings.map]) {
 			const intersections = intersect(
 				collider,
@@ -557,7 +557,7 @@ export default class ServerDisplayer extends Vue {
 		return false;
 	}
 
-	hypotPose(p1: Vector2, p2: Vector2) {
+	hypotPose(p1: PlayerPose, p2: PlayerPose) {
 		return Math.hypot(p1.x - p2.x, p1.y - p2.y);
 	}
 

@@ -1,5 +1,5 @@
+import { PlayerPose } from "@/models/ClientModel";
 import { GameMap } from "@skeldjs/constant";
-import { Vector2 } from "@skeldjs/util";
 
 export const CameraPositions = {
 	[GameMap.TheSkeld]: [
@@ -47,7 +47,7 @@ export const CameraPositions = {
 	[GameMap.Airship]: [],
 };
 
-export function getClosestCamera(position: Vector2, map: GameMap) {
+export function getClosestCamera(position: PlayerPose, map: GameMap) {
 	const cameras = CameraPositions[map];
 
 	if (cameras.length) {
