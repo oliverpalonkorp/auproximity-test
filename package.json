@@ -15,7 +15,7 @@
 		"build:docker": "docker build -t auproxy-backend .",
 		"start": "node ./dist/main.js",
 		"lint": "eslint ./src/**/*.ts --fix && prettier --write .",
-		"heroku-postbuild": "yarn build && YARN_PRODUCTION=false && yarn --cwd auproximity-webui build && mkdir -p dist/dist && cp -r auproximity-webui/dist dist",
+		"heroku-postbuild": "yarn build && yarn workspace auproximity-webui run build && mkdir -p dist/dist && cp -r auproximity-webui/dist dist",
 		"prepare": "husky install"
 	},
 	"dependencies": {
