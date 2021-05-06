@@ -25,7 +25,7 @@ export default class ImpostorBackend extends BackendAdapter {
 
 	throttledEmitPlayerMove = _.throttle(this.emitPlayerPose, 300);
 
-	initialize(): void {
+	async initialize(): Promise<void> {
 		try {
 			this.connection = new HubConnectionBuilder()
 				.withUrl(`http://${this.backendModel.ip}:${IMPOSTOR_BACKEND_PORT}/hub`)
@@ -81,17 +81,15 @@ export default class ImpostorBackend extends BackendAdapter {
 				LogMode.Info,
 				`Impostor Backend initialized at http://${this.backendModel.ip}:${IMPOSTOR_BACKEND_PORT}/hub`
 			);
-			this.connection
-				.start()
-				.then(() =>
-					this.connection.send(
-						ImpostorSocketEvents.TrackGame,
-						this.backendModel.gameCode
-					)
-				)
-				.catch((err) =>
-					this.log(LogMode.Error, `Error in ImpostorBackend: ${err}`)
+			try {
+				await this.connection.start();
+				this.connection.send(
+					ImpostorSocketEvents.TrackGame,
+					this.backendModel.gameCode
 				);
+			} catch (err) {
+				this.log(LogMode.Error, `Error in ImpostorBackend: ${err}`);
+			}
 		} catch (err) {
 			this.log(LogMode.Error, `Error in ImpostorBackend: ${err}`);
 		}
