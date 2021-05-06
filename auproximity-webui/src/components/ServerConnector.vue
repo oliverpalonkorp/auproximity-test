@@ -9,6 +9,7 @@
 					outlined
 				></v-text-field>
 				<v-text-field
+					class="game-code"
 					v-model="gameCode"
 					label="Game Code"
 					:rules="[rules.required, rules.counter6]"
@@ -212,9 +213,12 @@ export default class ServerConnector extends Vue {
 	}
 }
 </script>
-<style scoped lang="stylus">
+<style lang="stylus">
 #slug-share {
   position: absolute;
   left: -9999px
+}
+.game-code input {
+  text-transform: uppercase;
 }
 </style>
