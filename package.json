@@ -16,7 +16,7 @@
 		"start": "node ./dist/main.js",
 		"lint": "eslint ./src/**/*.ts --fix && prettier --write .",
 		"heroku-postbuild": "yarn build && yarn workspace auproximity-webui run build && mkdir -p dist/dist && cp -r auproximity-webui/dist dist",
-		"prepare": "husky install"
+		"prepare": "husky install && git config blame.ignoreRevsFile .git-blame-ignore-revs"
 	},
 	"dependencies": {
 		"@microsoft/signalr": "^5.0.0",
