@@ -148,7 +148,7 @@ export default class ServerConnector extends Vue {
 			return !!value || "Required.";
 		},
 		counter6(value: string) {
-			return value.length === 6 || "Max 6 characters";
+			return value.length === 6 || value.length === 4 || "Max 6 characters";
 		},
 		publicLobbyRegion(value: PublicLobbyRegion) {
 			return Object.values(PublicLobbyRegion).includes(value);
