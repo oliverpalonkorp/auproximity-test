@@ -21,6 +21,7 @@ import { state } from "./main";
 import { PlayerFlag } from "./types/enums/PlayerFlags";
 import { GameFlag } from "./types/enums/GameFlags";
 import { GameState } from "./types/enums/GameState";
+import { JOIN_TIMEOUT } from "./consts";
 
 export interface PlayerPose {
 	x: number;
@@ -43,10 +44,13 @@ export default class Client implements ClientBase {
 
 	public name: string;
 
+	private connected_at: number;
+
 	constructor(socket: Socket, uuid: string) {
 		this.socket = socket;
 		this.uuid = uuid;
 		this.name = "";
+		this.connected_at = 0;
 
 		// Initialize socket events
 		this.socket.on(
@@ -74,6 +78,17 @@ export default class Client implements ClientBase {
 		this.socket.on(
 			ClientSocketEvents.JoinRoom,
 			async (payload: { name: string; backendModel: BackendModel }) => {
+				// Prevent users from spamming the join button
+				const current_time = Date.now();
+				if (current_time - this.connected_at < JOIN_TIMEOUT) {
+					this.sendError(
+						"Already joining, please wait 5 seconds before pressing the join button again",
+						false
+					);
+					return;
+				}
+				this.connected_at = current_time;
+
 				await this.joinRoom(payload.name, payload.backendModel);
 			}
 		);
