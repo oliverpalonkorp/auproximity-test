@@ -9,6 +9,7 @@
 					outlined
 				></v-text-field>
 				<v-text-field
+					class="game-code"
 					v-model="gameCode"
 					label="Game Code"
 					:rules="[rules.required, rules.counter6]"
@@ -147,7 +148,7 @@ export default class ServerConnector extends Vue {
 			return !!value || "Required.";
 		},
 		counter6(value: string) {
-			return value.length === 6 || "Max 6 characters";
+			return value.length === 6 || value.length === 4 || "Max 6 characters";
 		},
 		publicLobbyRegion(value: PublicLobbyRegion) {
 			return Object.values(PublicLobbyRegion).includes(value);
@@ -212,9 +213,12 @@ export default class ServerConnector extends Vue {
 	}
 }
 </script>
-<style scoped lang="stylus">
+<style lang="stylus">
 #slug-share {
   position: absolute;
   left: -9999px
+}
+.game-code input {
+  text-transform: uppercase;
 }
 </style>
