@@ -3,11 +3,10 @@ import dns from "dns";
 import chalk from "chalk";
 import path from "path";
 
-import { SkeldjsClient } from "@skeldjs/client";
+import * as skeldjs from "@skeldjs/client";
 import { authTokenHook } from "@skeldjs/get-auth-token";
 import * as text from "@skeldjs/text";
 import * as protocol from "@skeldjs/protocol";
-import * as skeldjs from "@skeldjs/core";
 
 const tb = text.tb;
 
@@ -77,7 +76,7 @@ export default class PublicLobbyBackend extends BackendAdapter {
 
 	backendModel: PublicLobbyBackendModel;
 
-	client: SkeldjsClient | undefined;
+	client: skeldjs.SkeldjsClient | undefined;
 
 	master: RegionServers;
 	server: number;
@@ -142,7 +141,7 @@ export default class PublicLobbyBackend extends BackendAdapter {
 		}
 
 		if (!this.client) {
-			this.client = new SkeldjsClient(GAME_VERSION, { allowHost: false });
+			this.client = new skeldjs.SkeldjsClient(GAME_VERSION, { allowHost: false });
 
 			const ver = process.platform === "win32" ? "win-x64" : "linux-x64";
 
