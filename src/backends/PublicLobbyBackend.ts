@@ -42,12 +42,14 @@ const colours = {
 	[skeldjs.Color.LightGreen]: chalk.greenBright,
 };
 
-function fmtName(player: skeldjs.PlayerData | undefined) {
+function fmtName(player: skeldjs.PlayerData | undefined, gamedata?: skeldjs.PlayerGameData) {
 	if (!player) return chalk.grey("<No Data>");
 
-	const has_data = !!player.data;
-	const colour = has_data ? player.data.color : skeldjs.Color.Grey;
-	const name = has_data ? player.data.name || "<No Name>" : "<No Data>";
+	const data = gamedata || player.data;
+
+	const has_data = !!data;
+	const colour = has_data ? data.color : skeldjs.Color.Grey;
+	const name = has_data ? data.name || "<No Name>" : "<No Data>";
 	const id = player.id || "<No ID>";
 
 	const consoleClr: chalk.Chalk =
@@ -707,7 +709,7 @@ export default class PublicLobbyBackend extends BackendAdapter {
 				const player = this.client.getPlayerByPlayerId(ev.player.playerId);
 
 				if (ev.player) {
-					this.log(LogMode.Info, "Removed", fmtName(player));
+					this.log(LogMode.Info, "Removed", fmtName(player, ev.player));
 					this.emitPlayerColor(ev.player.name, -1);
 				}
 			});
