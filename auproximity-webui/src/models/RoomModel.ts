@@ -25,6 +25,5 @@ export enum GameState {
 }
 
 export enum GameFlag {
-	None = 0,
-	CommsSabotaged = 1,
+	CommsSabotaged = "COMMS_SABOTAGED",
 }

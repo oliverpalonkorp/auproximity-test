@@ -311,7 +311,7 @@ export default class ServerDisplayer extends Vue {
 				y: 0,
 			},
 			color: -1,
-			flags: PlayerFlag.None,
+			flags: new Set,
 		};
 		this.$store.state.clients = [];
 		this.$store.state.options = {
@@ -382,10 +382,10 @@ export default class ServerDisplayer extends Vue {
 	}
 
 	@Socket(ClientSocketEvents.SetFlagsOf)
-	onSetFlagsOf(payload: { uuid: string; flags: number }) {
+	onSetFlagsOf(payload: { uuid: string; flags: Set<PlayerFlag> }) {
 		const myFlags = this.$store.state.me.flags;
 
-		if (payload.flags & PlayerFlag.IsDead) {
+		if (payload.flags.has(PlayerFlag.IsDead)) {
 			if (payload.uuid === this.$store.state.me.uuid) {
 				this.remoteStreams.forEach((s) => {
 					if (this.$store.state.clientOptions.omniscientGhosts) {
@@ -393,7 +393,7 @@ export default class ServerDisplayer extends Vue {
 						s.pannerNode.setPosition(0, 0, 0);
 					}
 				});
-			} else if (!(myFlags & PlayerFlag.IsDead)) {
+			} else if (!myFlags.has(PlayerFlag.IsDead)) {
 				const stream = this.remoteStreams.find((s) => s.uuid === payload.uuid);
 				if (!stream) return;
 				stream.gainNode.gain.value = 0;
@@ -402,12 +402,12 @@ export default class ServerDisplayer extends Vue {
 	}
 
 	@Socket(ClientSocketEvents.SetGameFlags)
-	onSetGameFlags(payload: { flags: number }) {
+	onSetGameFlags(payload: { flags: Set<GameFlag> }) {
 		const myFlags = this.$store.state.me.flags;
 
 		if (this.$store.state.gameState !== GameState.Lobby) {
-			if (payload.flags & GameFlag.CommsSabotaged) {
-				if (!(myFlags & PlayerFlag.IsDead)) {
+			if (payload.flags.has(GameFlag.CommsSabotaged)) {
+				if (!myFlags.has(PlayerFlag.IsDead)) {
 					this.remoteStreams.forEach((s) => {
 						s.gainNode.gain.value = 0;
 						s.pannerNode.setPosition(0, 0, 0);
@@ -425,7 +425,7 @@ export default class ServerDisplayer extends Vue {
 	onSetGameState(payload: { state: GameState }) {
 		switch (payload.state) {
 			case GameState.Meeting:
-				if (this.$store.state.gameFlags & GameFlag.CommsSabotaged) {
+				if (this.$store.state.gameFlags.has(GameFlag.CommsSabotaged)) {
 					if (this.$store.state.options.meetingsCommsSabotage) {
 						this.remoteStreams.forEach((s) => {
 							s.gainNode.gain.value = 0;
@@ -488,8 +488,8 @@ export default class ServerDisplayer extends Vue {
 		if (!client) return;
 
 		if (
-			client.flags & PlayerFlag.IsDead && // If the player is dead
-			!(myFlags & PlayerFlag.IsDead) // If I am not dead
+			client.flags.has(PlayerFlag.IsDead) && // If the player is dead
+			!myFlags.has(PlayerFlag.IsDead) // If I am not dead
 		) {
 			stream.gainNode.gain.value = 0;
 			stream.pannerNode.setPosition(0, 0, 0);
@@ -497,8 +497,8 @@ export default class ServerDisplayer extends Vue {
 		}
 
 		if (
-			!(myFlags & PlayerFlag.IsDead) && // Only if I'm not dead.
-			gameFlags & GameFlag.CommsSabotaged && // Only if communications are sabotaged.
+			!myFlags.has(PlayerFlag.IsDead) && // Only if I'm not dead.
+			gameFlags.has(GameFlag.CommsSabotaged) && // Only if communications are sabotaged.
 			this.$store.state.options.commsSabotage && // Only if comms sabotage should stop voice.
 			(this.$store.state.gameState !== GameState.Meeting ||
 				this.$store.state.options.meetingsCommsSabotage) // Only if there's no meeting & you should be able to hear people in meetings
@@ -515,7 +515,7 @@ export default class ServerDisplayer extends Vue {
 		}
 
 		if (
-			myFlags & PlayerFlag.IsDead &&
+			myFlags.has(PlayerFlag.IsDead) &&
 			this.$store.state.clientOptions.omniscientGhosts
 		) {
 			stream.gainNode.gain.value = 1;
@@ -524,7 +524,7 @@ export default class ServerDisplayer extends Vue {
 		}
 		const p2 = client.position;
 		const p1 =
-			this.$store.state.me.flags & PlayerFlag.OnCams
+			this.$store.state.me.flags.has(PlayerFlag.OnCams)
 				? getClosestCamera(p2, this.settings.map) ||
 				  this.$store.state.me.position
 				: this.$store.state.me.position;

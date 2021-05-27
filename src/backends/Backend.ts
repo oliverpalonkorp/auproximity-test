@@ -63,8 +63,8 @@ export abstract class BackendAdapter extends EventEmitter {
 		this.emit(BackendEvent.PlayerColor, { name, color });
 	}
 
-	emitPlayerFlags(name: string, flags: PlayerFlag, set: boolean): void {
-		this.emit(BackendEvent.PlayerFlags, { name, flags, set });
+	emitPlayerFlags(name: string, flag: PlayerFlag, set: boolean): void {
+		this.emit(BackendEvent.PlayerFlags, { name, flag, set });
 	}
 
 	emitHostChange(name: string): void {
@@ -75,8 +75,8 @@ export abstract class BackendAdapter extends EventEmitter {
 		this.emit(BackendEvent.GameState, { state });
 	}
 
-	emitGameFlags(flags: GameFlag, set: boolean): void {
-		this.emit(BackendEvent.GameFlags, { flags, set });
+	emitGameFlags(flag: GameFlag, set: boolean): void {
+		this.emit(BackendEvent.GameFlags, { flag, set });
 	}
 
 	emitSettingsUpdate(settings: GameSettings): void {

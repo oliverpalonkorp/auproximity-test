@@ -1,6 +1,5 @@
 export enum PlayerFlag {
-	None = 0,
-	IsImpostor = 1,
-	IsDead = 2,
-	OnCams = 4,
+	IsImpostor = "IS_IMPOSTOR",
+	IsDead = "IS_DEAD",
+	OnCams = "ON_CAMS",
 }

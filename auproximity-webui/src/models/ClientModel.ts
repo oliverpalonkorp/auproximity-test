@@ -1,8 +1,7 @@
 export enum PlayerFlag {
-	None = 0,
-	IsImpostor = 1,
-	IsDead = 2,
-	OnCams = 4,
+	IsImpostor = "IS_IMPOSTOR",
+	IsDead = "IS_DEAD",
+	OnCams = "ON_CAMS",
 }
 
 export interface PlayerPose {
@@ -15,7 +14,7 @@ export interface ClientModel {
 	name: string;
 	position: PlayerPose;
 	color: ColorID;
-	flags: PlayerFlag;
+	flags: Set<PlayerFlag>;
 	ventid: number;
 }
 

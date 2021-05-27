@@ -32,7 +32,7 @@ export interface PlayerModel {
 	name: string;
 	position: PlayerPose;
 	color: Color;
-	flags: number;
+	flags: Set<PlayerFlag>;
 	ventid: number;
 }
 
@@ -196,12 +196,14 @@ export default class Client implements ClientBase {
 		uuid: string,
 		name: string,
 		position: PlayerPose,
+		flags: Set<PlayerFlag>,
 		color: Color
 	): void {
 		this.socket.emit(ClientSocketEvents.AddClient, {
 			uuid,
 			name,
 			position,
+			flags: [...flags],
 			color,
 		});
 	}
@@ -238,11 +240,11 @@ export default class Client implements ClientBase {
 		this.socket.emit(ClientSocketEvents.SetGameState, { state });
 	}
 
-	setGameFlags(flags: GameFlag): void {
-		this.socket.emit(ClientSocketEvents.SetGameFlags, { flags });
+	setGameFlags(flags: Set<GameFlag>): void {
+		this.socket.emit(ClientSocketEvents.SetGameFlags, { flags: [...flags] });
 	}
 
-	setFlagsOf(uuid: string, flags: PlayerFlag): void {
-		this.socket.emit(ClientSocketEvents.SetFlagsOf, { uuid, flags });
+	setFlagsOf(uuid: string, flags: Set<PlayerFlag>): void {
+		this.socket.emit(ClientSocketEvents.SetFlagsOf, { uuid, flags: [...flags] });
 	}
 }

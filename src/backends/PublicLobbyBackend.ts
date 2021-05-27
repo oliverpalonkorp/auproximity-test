@@ -948,16 +948,10 @@ export default class PublicLobbyBackend extends BackendAdapter {
 			}
 		}
 
-		const formatted = tb(
-			text.bold(),
-			text.color("blue"),
-			text.align(text.Align.Center)
-		).text("<sprite=0> AUProximity is ready. <sprite=0>", true);
-
-		await this.client.me.control.checkName("ㆍ");
+		await this.client.me.control.checkName("auproxy");
 		await this.client.me.control.checkColor(skeldjs.Color.Blue);
 		await this.client.me.wait("player.setname");
-		await this.client.me.control.sendChat(formatted.toString());
+		await this.client.me.control.sendChat("AUProximity is ready.");
 
 		await sleep(100);
 

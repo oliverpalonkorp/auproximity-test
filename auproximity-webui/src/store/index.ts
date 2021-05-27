@@ -44,7 +44,7 @@ const state: State = {
 			y: 0,
 		},
 		color: -1,
-		flags: PlayerFlag.None,
+		flags: new Set,
 		ventid: -1,
 	},
 	clients: [],
@@ -60,7 +60,7 @@ const state: State = {
 		omniscientGhosts: false,
 	},
 	gameState: GameState.Lobby,
-	gameFlags: GameFlag.None,
+	gameFlags: new Set,
 	host: "",
 };
 export default new Vuex.Store({
@@ -111,14 +111,21 @@ export default new Vuex.Store({
 				state.clients[index].color = payload.color;
 			}
 		},
-		setFlags(state: State, flags: PlayerFlag) {
-			state.me.flags = flags;
+		setFlags(state: State, flags: PlayerFlag[]) {
+			state.me.flags.clear();
+      for (const flag of flags) {
+        state.me.flags.add(flag);
+      }
 		},
-		setFlagsOf(state: State, payload: { uuid: string; flags: PlayerFlag }) {
+		setFlagsOf(state: State, payload: { uuid: string; flags: PlayerFlag[] }) {
 			const index = state.clients.findIndex((c) => c.uuid === payload.uuid);
 
 			if (index !== -1) {
-				state.clients[index].flags = payload.flags;
+        const client = state.clients[index];
+        client.flags.clear();
+        for (const flag of payload.flags) {
+          client.flags.add(flag);
+        }
 			}
 		},
 		setJoinedRoom(state: State, payload: boolean) {
@@ -140,8 +147,11 @@ export default new Vuex.Store({
 		setGameState(state: State, payload: { state: GameState }) {
 			state.gameState = payload.state;
 		},
-		setGameFlags(state: State, payload: { flags: number }) {
-			state.gameFlags = payload.flags;
+		setGameFlags(state: State, payload: { flags: Set<GameFlag> }) {
+      state.gameFlags.clear();
+      for (const flag of payload.flags) {
+        state.gameFlags.add(flag);
+      };
 		},
 	},
 	actions: {
@@ -177,7 +187,7 @@ export default new Vuex.Store({
 				name: payload.name,
 				position: payload.position,
 				color: payload.color,
-				flags: payload.flags,
+				flags: new Set(payload.flags),
 				ventid: payload.ventid,
 			};
 			commit("addClient", client);
@@ -191,7 +201,7 @@ export default new Vuex.Store({
 				name: c.name,
 				position: c.position,
 				color: c.color,
-				flags: c.flags,
+				flags: new Set(c.flags),
 				ventid: c.ventid,
 			}));
 			commit("setAllClients", clients);
@@ -258,13 +268,13 @@ export default new Vuex.Store({
 		},
 		[`socket_${ClientSocketEvents.SetGameFlags}`](
 			{ commit },
-			payload: { flags: number }
+			payload: { flags: Set<GameFlag> }
 		) {
 			commit("setGameFlags", { flags: payload.flags });
 		},
 		[`socket_${ClientSocketEvents.SetFlagsOf}`](
 			{ commit, state },
-			payload: { uuid: string; flags: PlayerFlag }
+			payload: { uuid: string; flags: Set<PlayerFlag> }
 		) {
 			if (payload.uuid === state.me.uuid) {
 				commit("setFlags", payload.flags);
@@ -294,6 +304,6 @@ export interface State {
 	options: HostOptions;
 	clientOptions: ClientOptions;
 	gameState: GameState;
-	gameFlags: number;
+	gameFlags: Set<GameFlag>;
 	host: string;
 }

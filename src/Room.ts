@@ -35,25 +35,35 @@ export default class Room {
 
 	map: GameMap;
 	hostname: string;
-	flags = 0;
-	state: GameState = GameState.Lobby;
-	options: HostOptions = {
-		falloff: 4.5,
-		falloffVision: false,
-		colliders: false,
-		paSystems: true,
-		commsSabotage: true,
-		meetingsCommsSabotage: true,
-	};
-	settings: GameSettings = {
-		crewmateVision: 1,
-		map: GameMap.TheSkeld,
-	};
-	players = new Map<string, PlayerModel>();
+	flags: Set<GameFlag>;
+	state: GameState;
+	options: HostOptions;
+	settings: GameSettings;
+	players: Map<string, PlayerModel>;
 
 	constructor(backendModel: BackendModel) {
 		this.backendModel = backendModel;
 		this.backendAdapter = Room.buildBackendAdapter(backendModel);
+
+		this.flags = new Set;
+		this.state = GameState.Lobby;
+
+		this.options = {
+			falloff: 4.5,
+			falloffVision: false,
+			colliders: false,
+			paSystems: true,
+			commsSabotage: true,
+			meetingsCommsSabotage: true,
+		};
+
+		this.settings = {
+			crewmateVision: 1,
+			map: GameMap.TheSkeld,
+		};
+
+		this.players = new Map;
+
 		this.initializeBackend();
 	}
 
@@ -131,9 +141,9 @@ export default class Room {
 			async (payload: { state: GameState }) => {
 				this.state = payload.state;
 				if (this.state === GameState.Lobby) {
-					this.flags = GameFlag.None;
+					this.flags.clear();
 					for (const [, player] of this.players) {
-						player.flags = PlayerFlag.None;
+						player.flags.clear();
 					}
 				}
 
@@ -162,14 +172,14 @@ export default class Room {
 
 		this.backendAdapter.on(
 			BackendEvent.PlayerFlags,
-			async (payload: { name: string; flags: PlayerFlag; set: boolean }) => {
+			async (payload: { name: string; flag: PlayerFlag; set: boolean }) => {
 				const client = this.getClientByName(payload.name);
 				const player = this.getPlayerByName(payload.name);
 
 				if (payload.set) {
-					player.flags |= payload.flags;
+					player.flags.add(payload.flag);
 				} else {
-					player.flags &= ~payload.flags;
+					player.flags.delete(payload.flag);
 				}
 
 				if (client) {
@@ -182,11 +192,11 @@ export default class Room {
 
 		this.backendAdapter.on(
 			BackendEvent.GameFlags,
-			async (payload: { flags: number; set: boolean }) => {
+			async (payload: { flag: GameFlag; set: boolean }) => {
 				if (payload.set) {
-					this.flags |= payload.flags;
+					this.flags.add(payload.flag);
 				} else {
-					this.flags &= ~payload.flags;
+					this.flags.delete(payload.flag);
 				}
 
 				this.clients.forEach((c) => {
@@ -220,7 +230,7 @@ export default class Room {
 			name,
 			position: { x: 0, y: 0 },
 			color: -1,
-			flags: PlayerFlag.None,
+			flags: new Set,
 			ventid: -1,
 		};
 
@@ -250,7 +260,7 @@ export default class Room {
 		);
 
 		this.clients.forEach((c) => {
-			c.addClient(client.uuid, player.name, player.position, player.color);
+			c.addClient(client.uuid, player.name, player.position, player.flags, player.color);
 			c.setPoseOf(client.uuid, player.position);
 			c.setColorOf(client.uuid, player.color);
 
