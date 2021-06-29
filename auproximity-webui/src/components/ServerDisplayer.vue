@@ -311,7 +311,7 @@ export default class ServerDisplayer extends Vue {
 				y: 0,
 			},
 			color: -1,
-			flags: new Set,
+			flags: new Set(),
 		};
 		this.$store.state.clients = [];
 		this.$store.state.options = {
@@ -382,10 +382,12 @@ export default class ServerDisplayer extends Vue {
 	}
 
 	@Socket(ClientSocketEvents.SetFlagsOf)
-	onSetFlagsOf(payload: { uuid: string; flags: Set<PlayerFlag> }) {
+	onSetFlagsOf(payload: { uuid: string; flags: PlayerFlag }) {
 		const myFlags = this.$store.state.me.flags;
 
-		if (payload.flags.has(PlayerFlag.IsDead)) {
+		const sFlags = new Set(payload.flags);
+
+		if (sFlags.has(PlayerFlag.IsDead)) {
 			if (payload.uuid === this.$store.state.me.uuid) {
 				this.remoteStreams.forEach((s) => {
 					if (this.$store.state.clientOptions.omniscientGhosts) {
@@ -487,6 +489,8 @@ export default class ServerDisplayer extends Vue {
 		);
 		if (!client) return;
 
+		console.log("client: ", client.flags);
+		console.log("mine: ", myFlags);
 		if (
 			client.flags.has(PlayerFlag.IsDead) && // If the player is dead
 			!myFlags.has(PlayerFlag.IsDead) // If I am not dead
@@ -523,11 +527,9 @@ export default class ServerDisplayer extends Vue {
 			return;
 		}
 		const p2 = client.position;
-		const p1 =
-			this.$store.state.me.flags.has(PlayerFlag.OnCams)
-				? getClosestCamera(p2, this.settings.map) ||
-				  this.$store.state.me.position
-				: this.$store.state.me.position;
+		const p1 = this.$store.state.me.flags.has(PlayerFlag.OnCams)
+			? getClosestCamera(p2, this.settings.map) || this.$store.state.me.position
+			: this.$store.state.me.position;
 
 		this.setGainAndPan(stream, p1, p2);
 	}

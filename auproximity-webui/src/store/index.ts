@@ -44,7 +44,7 @@ const state: State = {
 			y: 0,
 		},
 		color: -1,
-		flags: new Set,
+		flags: new Set(),
 		ventid: -1,
 	},
 	clients: [],
@@ -60,7 +60,7 @@ const state: State = {
 		omniscientGhosts: false,
 	},
 	gameState: GameState.Lobby,
-	gameFlags: new Set,
+	gameFlags: new Set(),
 	host: "",
 };
 export default new Vuex.Store({
@@ -113,19 +113,19 @@ export default new Vuex.Store({
 		},
 		setFlags(state: State, flags: PlayerFlag[]) {
 			state.me.flags.clear();
-      for (const flag of flags) {
-        state.me.flags.add(flag);
-      }
+			for (const flag of flags) {
+				state.me.flags.add(flag);
+			}
 		},
 		setFlagsOf(state: State, payload: { uuid: string; flags: PlayerFlag[] }) {
 			const index = state.clients.findIndex((c) => c.uuid === payload.uuid);
 
 			if (index !== -1) {
-        const client = state.clients[index];
-        client.flags.clear();
-        for (const flag of payload.flags) {
-          client.flags.add(flag);
-        }
+				const client = state.clients[index];
+				client.flags.clear();
+				for (const flag of payload.flags) {
+					client.flags.add(flag);
+				}
 			}
 		},
 		setJoinedRoom(state: State, payload: boolean) {
@@ -148,10 +148,10 @@ export default new Vuex.Store({
 			state.gameState = payload.state;
 		},
 		setGameFlags(state: State, payload: { flags: Set<GameFlag> }) {
-      state.gameFlags.clear();
-      for (const flag of payload.flags) {
-        state.gameFlags.add(flag);
-      };
+			state.gameFlags.clear();
+			for (const flag of payload.flags) {
+				state.gameFlags.add(flag);
+			}
 		},
 	},
 	actions: {

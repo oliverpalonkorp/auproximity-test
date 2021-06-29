@@ -22,7 +22,7 @@ import { GameData, MeetingHud } from "@skeldjs/client";
 
 // ~~Using integer for now, version parsing isn't working on SkeldJS with 2020.3.5.0 for some reason.~~
 // I'm keeping this comment here because it shows how stupid I am that it is in fact 2021 and not 2020.
-const GAME_VERSION = "2021.4.2.0";
+const GAME_VERSION = "2021.4.25.0";
 
 const colours = {
 	[skeldjs.Color.Red]: chalk.redBright,
@@ -455,12 +455,12 @@ export default class PublicLobbyBackend extends BackendAdapter {
 				}
 			});
 
-			this.client.on("room.game.start", async () => {
+			this.client.on("room.gamestart", async () => {
 				this.emitGameState(GameState.Game);
 				this.log(LogMode.Info, "Game started.");
 			});
 
-			this.client.on("room.game.end", async () => {
+			this.client.on("room.gameend", async () => {
 				this.emitGameState(GameState.Lobby);
 				this.log(LogMode.Info, "Game ended, clearing cache & re-joining..");
 
@@ -598,7 +598,7 @@ export default class PublicLobbyBackend extends BackendAdapter {
 				}
 			});
 
-			this.client.on("player.callmeeting", async () => {
+			this.client.on("player.startmeeting", async () => {
 				if (!this.client) return;
 
 				const ev = await this.client.wait("component.spawn");
@@ -741,12 +741,19 @@ export default class PublicLobbyBackend extends BackendAdapter {
 			});
 
 			this.client.on("component.spawn", () => {
-				// this.log(LogMode.Log, "Component was spawned, resetting object cache.");
+				if (process.env.NODE_ENV === "production") return;
+
+				this.log(LogMode.Log, "Component was spawned, resetting object cache.");
 				this.resetObjectCaches();
 			});
 
 			this.client.on("component.despawn", () => {
-				// this.log(LogMode.Log, "Component was despawned, resetting object cache.");
+				if (process.env.NODE_ENV === "production") return;
+
+				this.log(
+					LogMode.Log,
+					"Component was despawned, resetting object cache."
+				);
 				this.resetObjectCaches();
 			});
 
