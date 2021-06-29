@@ -21,13 +21,13 @@
 	"dependencies": {
 		"@microsoft/signalr": "^5.0.0",
 		"@sentry/node": "^6.2.5",
-		"@skeldjs/client": "^2.6.20",
-		"@skeldjs/constant": "^2.6.20",
-		"@skeldjs/core": "^2.6.20",
-		"@skeldjs/get-auth-token": "^2.6.20",
-		"@skeldjs/protocol": "^2.6.20",
-		"@skeldjs/text": "^2.6.20",
-		"@skeldjs/util": "^2.6.20",
+		"@skeldjs/client": "^2.10.14",
+		"@skeldjs/constant": "^2.10.14",
+		"@skeldjs/core": "^2.10.14",
+		"@skeldjs/get-auth-token": "^2.10.14",
+		"@skeldjs/protocol": "^2.10.14",
+		"@skeldjs/text": "^2.10.14",
+		"@skeldjs/util": "^2.10.14",
 		"chalk": "^4.1.0",
 		"cors": "^2.8.5",
 		"dotenv": "^8.2.0",
@@ -86,14 +86,8 @@
 			"semi": "error"
 		}
 	},
-	"engines": {
-		"node": "14.x"
-	},
 	"lint-staged": {
 		"*.ts": "eslint --cache --fix",
 		"*.{json,md,ts,vue,yaml}": "prettier --write"
-	},
-	"workspaces": [
-		"auproximity-webui"
-	]
+	}
 }
