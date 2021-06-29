@@ -19,6 +19,7 @@
 		"prepare": "husky install && git config blame.ignoreRevsFile .git-blame-ignore-revs"
 	},
 	"dependencies": {
+		"@microsoft/signalr": "^5.0.7",
 		"@sentry/node": "^6.2.5",
 		"@skeldjs/client": "^2.10.14",
 		"@skeldjs/constant": "^2.10.14",
