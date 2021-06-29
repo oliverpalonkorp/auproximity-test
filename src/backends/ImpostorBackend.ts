@@ -1,6 +1,6 @@
 import { Vector2 } from "@skeldjs/util";
 import { HubConnection, HubConnectionBuilder } from "@microsoft/signalr";
-import _ from "lodash";
+import _throttle from "lodash.throttle";
 
 import { ImpostorBackendModel } from "../types/models/Backends";
 
@@ -23,7 +23,7 @@ export default class ImpostorBackend extends BackendAdapter {
 		this.gameID = this.backendModel.ip + ":" + IMPOSTOR_BACKEND_PORT;
 	}
 
-	throttledEmitPlayerMove = _.throttle(this.emitPlayerPose, 300);
+	throttledEmitPlayerMove = _throttle(this.emitPlayerPose, 300);
 
 	async initialize(): Promise<void> {
 		try {
