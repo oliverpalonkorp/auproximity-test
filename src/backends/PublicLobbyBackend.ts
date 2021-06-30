@@ -1,6 +1,6 @@
 import util from "util";
 import dns from "dns";
-import chalk from "chalk";
+import ch from "chalk";
 import path from "path";
 
 import * as skeldjs from "@skeldjs/client";
@@ -18,26 +18,12 @@ import { GameSettings } from "../types/models/ClientOptions";
 import { MatchmakerServers } from "../types/constants/MatchmakerServers";
 import { GameState } from "../types/enums/GameState";
 import { GameFlag } from "../types/enums/GameFlags";
-import { GameData, MeetingHud } from "@skeldjs/client";
 
 // ~~Using integer for now, version parsing isn't working on SkeldJS with 2020.3.5.0 for some reason.~~
 // I'm keeping this comment here because it shows how stupid I am that it is in fact 2021 and not 2020.
 const GAME_VERSION = "2021.4.25.0";
 
-const colours = {
-	[skeldjs.Color.Red]: chalk.redBright,
-	[skeldjs.Color.Blue]: chalk.blue,
-	[skeldjs.Color.Green]: chalk.green,
-	[skeldjs.Color.Pink]: chalk.magentaBright,
-	[skeldjs.Color.Orange]: chalk.yellowBright,
-	[skeldjs.Color.Yellow]: chalk.yellow,
-	[skeldjs.Color.Grey]: chalk.grey,
-	[skeldjs.Color.White]: chalk.white,
-	[skeldjs.Color.Purple]: chalk.magenta,
-	[skeldjs.Color.Brown]: chalk.red,
-	[skeldjs.Color.Cyan]: chalk.cyan,
-	[skeldjs.Color.LightGreen]: chalk.greenBright,
-};
+const chalk = new ch.Instance({ level: 2 });
 
 function fmtName(
 	player: skeldjs.PlayerData | undefined,
@@ -51,8 +37,11 @@ function fmtName(
 	const name = info ? info.name || "<No Name>" : "<No Data>";
 	const id = player.id || "<No ID>";
 
-	const consoleClr: chalk.Chalk =
-		colours[colour] || colours[skeldjs.Color.Grey];
+	const consoleClr: ch.Chalk = skeldjs.ColorCodes[
+		colour as keyof typeof skeldjs.ColorCodes
+	]?.hex
+		? chalk.hex(skeldjs.ColorCodes[colour]?.hex)
+		: chalk.gray;
 
 	return consoleClr(name) + " " + chalk.grey("(" + id + ")");
 }
@@ -81,9 +70,16 @@ export default class PublicLobbyBackend extends BackendAdapter {
 	master: RegionServers;
 	server: number;
 
-	players_cache: Map<number, skeldjs.PlayerData>;
-	components_cache: Map<number, skeldjs.Networkable>;
-	global_cache: (skeldjs.Networkable | null)[];
+	players_cache: Map<number, skeldjs.PlayerData<skeldjs.SkeldjsClient>>;
+	components_cache: Map<
+		number,
+		skeldjs.Networkable<
+			unknown,
+			skeldjs.NetworkableEvents,
+			skeldjs.SkeldjsClient
+		>
+	>;
+	global_cache: (skeldjs.Networkable<skeldjs.SkeldjsClient> | null)[];
 
 	settings: GameSettings;
 
@@ -349,7 +345,7 @@ export default class PublicLobbyBackend extends BackendAdapter {
 				([objectid]) =>
 					objectid !== this.client?.clientid && objectid > 0 /* not global */
 			)
-		) as Map<number, skeldjs.PlayerData>;
+		) as Map<number, skeldjs.PlayerData<skeldjs.SkeldjsClient>>;
 		this.components_cache = new Map(
 			[...this.client.netobjects.entries()].filter(
 				([, component]) => component.ownerid !== this.client?.clientid
@@ -426,7 +422,7 @@ export default class PublicLobbyBackend extends BackendAdapter {
 							: ev.reason + " (" + ev.message + ")")
 				);
 
-				await this.destroy();
+				if (this.client?.started) await this.destroy();
 			});
 
 			this.client.on("player.move", (ev) => {
@@ -467,7 +463,7 @@ export default class PublicLobbyBackend extends BackendAdapter {
 				await this.disconnect();
 				await sleep(500);
 
-				if (!(await this.doJoin())) return;
+				await this.doJoin();
 			});
 
 			this.client.on("player.sethost", async (ev) => {
@@ -602,9 +598,9 @@ export default class PublicLobbyBackend extends BackendAdapter {
 				if (!this.client) return;
 
 				const ev = await this.client.wait("component.spawn");
-				if (ev.networkable.classname === "MeetingHud") {
+				if (ev.component.classname === "MeetingHud") {
 					this.emitGameState(GameState.Meeting);
-					const meetinghud = ev.networkable as MeetingHud;
+					const meetinghud = (ev.component as unknown) as skeldjs.MeetingHud;
 
 					const all_states = [...meetinghud.states.values()];
 					const state = all_states.find((state) => state.didReport);
@@ -796,15 +792,15 @@ export default class PublicLobbyBackend extends BackendAdapter {
 			this.client.on("component.spawn", function onSpawn(ev) {
 				if (!_this.client) return;
 
-				if (ev.networkable.classname === "GameData") {
+				if (ev.component.classname === "GameData") {
 					gamedataSpawned = true;
-					const gamedata = ev.networkable as GameData;
+					const gamedata = (ev.component as unknown) as skeldjs.GameData;
 
 					for (const [, player] of gamedata.players) {
 						if (player.name) _this.emitPlayerColor(player.name, player.color);
 					}
-				} else if (ev.networkable.classname === "PlayerControl") {
-					playersSpawned.push(ev.networkable.ownerid);
+				} else if (ev.component.classname === "PlayerControl") {
+					playersSpawned.push(ev.component.ownerid);
 				}
 
 				if (gamedataSpawned) {

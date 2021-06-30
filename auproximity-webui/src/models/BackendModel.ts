@@ -13,22 +13,10 @@ export interface ImpostorBackendModel extends BackendModel {
 	ip: string;
 }
 
-export interface NodePolusBackendModel extends BackendModel {
-	backendType: BackendType.NodePolus;
-	ip: string;
-}
-
-export interface BepInExBackendModel extends BackendModel {
-	backendType: BackendType.BepInEx;
-	token: string;
-}
-
 export enum BackendType {
 	NoOp,
 	PublicLobby,
 	Impostor,
-	BepInEx,
-	NodePolus,
 }
 
 export enum PublicLobbyRegion {
