@@ -494,7 +494,8 @@ export default class ServerDisplayer extends Vue {
 
 		if (
 			client.flags.has(PlayerFlag.IsDead) && // If the player is dead
-			!myFlags.has(PlayerFlag.IsDead) // If I am not dead
+			!myFlags.has(PlayerFlag.IsDead) && // If I am not dead
+			this.$store.state.gameState !== GameState.Lobby
 		) {
 			stream.gainNode.gain.value = 0;
 			stream.pannerNode.setPosition(0, 0, 0);
@@ -505,8 +506,7 @@ export default class ServerDisplayer extends Vue {
 			!myFlags.has(PlayerFlag.IsDead) && // Only if I'm not dead.
 			gameFlags.has(GameFlag.CommsSabotaged) && // Only if communications are sabotaged.
 			this.$store.state.options.commsSabotage && // Only if comms sabotage should stop voice.
-			(this.$store.state.gameState !== GameState.Meeting ||
-				this.$store.state.options.meetingsCommsSabotage) // Only if there's no meeting & you should be able to hear people in meetings
+			this.$store.state.gameState !== GameState.Meeting
 		) {
 			stream.gainNode.gain.value = 0;
 			stream.pannerNode.setPosition(0, 0, 0);
@@ -514,6 +514,14 @@ export default class ServerDisplayer extends Vue {
 		}
 
 		if (this.$store.state.gameState === GameState.Meeting) {
+			if (
+				gameFlags.has(GameFlag.CommsSabotaged) &&
+				this.$store.state.options.meetingsCommsSabotage
+			) {
+				stream.gainNode.gain.value = 0;
+				stream.pannerNode.setPosition(0, 0, 0);
+			}
+
 			stream.gainNode.gain.value = 1;
 			stream.pannerNode.setPosition(0, 0, 0);
 			return;
@@ -527,10 +535,14 @@ export default class ServerDisplayer extends Vue {
 			stream.pannerNode.setPosition(0, 0, 0);
 			return;
 		}
+
 		const p2 = client.position;
-		const p1 = this.$store.state.me.flags.has(PlayerFlag.OnCams)
-			? getClosestCamera(p2, this.settings.map) || this.$store.state.me.position
-			: this.$store.state.me.position;
+		const p1 =
+			this.$store.state.me.flags.has(PlayerFlag.OnCams) &&
+			this.$store.state.options.paSystems
+				? getClosestCamera(p2, this.settings.map) ||
+				  this.$store.state.me.position
+				: this.$store.state.me.position;
 
 		this.setGainAndPan(stream, p1, p2);
 	}
