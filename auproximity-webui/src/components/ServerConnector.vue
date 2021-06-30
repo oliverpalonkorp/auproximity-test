@@ -103,14 +103,6 @@ export default class ServerConnector extends Vue {
 			backendName: "Impostor Private Server",
 			backendType: BackendType.Impostor,
 		},
-		{
-			backendName: "NodePolus Private Server",
-			backendType: BackendType.NodePolus,
-		},
-		{
-			backendName: "BepInEx",
-			backendType: BackendType.BepInEx,
-		},
 	];
 
 	// Impostor and NodePolus Backend
@@ -163,10 +155,7 @@ export default class ServerConnector extends Vue {
 		};
 		if (this.backendType === BackendType.PublicLobby) {
 			(backendModel as PublicLobbyBackendModel).region = this.publicLobbyRegion;
-		} else if (
-			this.backendType === BackendType.Impostor ||
-			this.backendType === BackendType.NodePolus
-		) {
+		} else if (this.backendType === BackendType.Impostor) {
 			(backendModel as ImpostorBackendModel).ip = this.ip;
 		}
 		this.$emit("joinroom", {
@@ -186,10 +175,7 @@ export default class ServerConnector extends Vue {
 	}
 
 	get shareSlug() {
-		if (
-			this.backendType === BackendType.Impostor ||
-			this.backendType === BackendType.NodePolus
-		) {
+		if (this.backendType === BackendType.Impostor) {
 			return (
 				location.origin +
 				"/" +

@@ -4,8 +4,6 @@ export enum BackendType {
 	NoOp,
 	PublicLobby,
 	Impostor,
-	BepInEx,
-	NodePolus,
 }
 
 export interface BackendModel {
@@ -21,14 +19,4 @@ export interface PublicLobbyBackendModel extends BackendModel {
 export interface ImpostorBackendModel extends BackendModel {
 	backendType: BackendType.Impostor;
 	ip: string;
-}
-
-export interface NodePolusBackendModel extends BackendModel {
-	backendType: BackendType.NodePolus;
-	ip: string;
-}
-
-export interface BepInExBackendModel extends BackendModel {
-	backendType: BackendType.BepInEx;
-	token: string;
 }

@@ -5,9 +5,7 @@ import { Color } from "@skeldjs/constant";
 import {
 	BackendModel,
 	BackendType,
-	BepInExBackendModel,
 	ImpostorBackendModel,
-	NodePolusBackendModel,
 	PublicLobbyBackendModel,
 } from "./types/models/Backends";
 
@@ -140,22 +138,6 @@ export default class Client implements ClientBase {
 					(room.backendModel as PublicLobbyBackendModel).region ===
 					(backendModel as PublicLobbyBackendModel).region
 				);
-			} else if (
-				room.backendModel.backendType === BackendType.NodePolus &&
-				backendModel.backendType === BackendType.NodePolus
-			) {
-				return (
-					(room.backendModel as NodePolusBackendModel).ip ===
-					(backendModel as NodePolusBackendModel).ip
-				);
-			} else if (
-				room.backendModel.backendType === BackendType.BepInEx &&
-				backendModel.backendType === BackendType.BepInEx
-			) {
-				return (
-					(room.backendModel as BepInExBackendModel).token ===
-					(backendModel as BepInExBackendModel).token
-				);
 			}
 			return false;
 		});
@@ -245,6 +227,9 @@ export default class Client implements ClientBase {
 	}
 
 	setFlagsOf(uuid: string, flags: Set<PlayerFlag>): void {
-		this.socket.emit(ClientSocketEvents.SetFlagsOf, { uuid, flags: [...flags] });
+		this.socket.emit(ClientSocketEvents.SetFlagsOf, {
+			uuid,
+			flags: [...flags],
+		});
 	}
 }
