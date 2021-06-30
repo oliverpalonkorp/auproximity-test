@@ -468,6 +468,7 @@ export default class ServerDisplayer extends Vue {
 	@Socket(ClientSocketEvents.SetSettings)
 	onSetSettings(payload: { settings: GameSettings }) {
 		this.settings = payload.settings;
+		console.log(this.settings);
 	}
 
 	@Socket(ClientSocketEvents.SetOptions)
@@ -489,8 +490,6 @@ export default class ServerDisplayer extends Vue {
 		);
 		if (!client) return;
 
-		console.log("client: ", client.flags);
-		console.log("mine: ", myFlags);
 		if (
 			client.flags.has(PlayerFlag.IsDead) && // If the player is dead
 			!myFlags.has(PlayerFlag.IsDead) // If I am not dead

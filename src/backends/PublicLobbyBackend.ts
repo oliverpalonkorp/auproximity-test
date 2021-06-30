@@ -820,12 +820,7 @@ export default class PublicLobbyBackend extends BackendAdapter {
 	async awaitSettings(): Promise<protocol.GameOptions | null> {
 		if (!this.client) return null;
 
-		if (this.client.settings) {
-			return this.client.settings;
-		}
-
 		const ev = await this.client.wait("player.syncsettings");
-
 		return ev.settings;
 	}
 
