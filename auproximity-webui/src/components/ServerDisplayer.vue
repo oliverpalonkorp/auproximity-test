@@ -404,11 +404,13 @@ export default class ServerDisplayer extends Vue {
 	}
 
 	@Socket(ClientSocketEvents.SetGameFlags)
-	onSetGameFlags(payload: { flags: Set<GameFlag> }) {
+	onSetGameFlags(payload: { flags: GameFlag[] }) {
 		const myFlags = this.$store.state.me.flags;
 
+		const sFlags = new Set(payload.flags);
+
 		if (this.$store.state.gameState !== GameState.Lobby) {
-			if (payload.flags.has(GameFlag.CommsSabotaged)) {
+			if (sFlags.has(GameFlag.CommsSabotaged)) {
 				if (!myFlags.has(PlayerFlag.IsDead)) {
 					this.remoteStreams.forEach((s) => {
 						s.gainNode.gain.value = 0;

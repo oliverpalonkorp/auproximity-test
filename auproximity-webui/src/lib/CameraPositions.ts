@@ -68,5 +68,6 @@ export function getClosestCamera(position: PlayerPose, map: GameMap) {
 
 		return closest;
 	}
+
 	return null;
 }
