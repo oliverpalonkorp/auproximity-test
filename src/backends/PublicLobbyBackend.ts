@@ -38,7 +38,7 @@ function fmtName(
 	const consoleClr: ch.Chalk = skeldjs.ColorCodes[
 		colour as keyof typeof skeldjs.ColorCodes
 	]?.highlightHex
-		? chalk.hex(skeldjs.ColorCodes[colour]?.hex)
+		? chalk.hex(skeldjs.ColorCodes[colour]?.highlightHex)
 		: chalk.gray;
 
 	return consoleClr(name) + " " + chalk.grey("(" + id + ")");
