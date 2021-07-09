@@ -8,7 +8,7 @@ I have an open instance hosted at https://aupro.xyz.
 
 This software should be used for personal use on public lobbies. Anyone that wants to
 have a custom solution, private server, or other commercial use for this software should
-send a direct message to `edward#2222` on Discord.
+send a direct message to <a href="https://discordapp.com/users/508426414387757057">`edward#2222`</a> on Discord.
 
 ## Features
 
@@ -19,10 +19,9 @@ send a direct message to `edward#2222` on Discord.
     (e.g. It **won't** be limited to 9 players)
 - There is also planned support for a [BepInEx](https://github.com/BepInEx/BepInEx) mod,
   which will serve the purpose of sending positional data to the backend server.
-  - Currently, the Impostor plugin and BepInEx mod are separate projects.
+  - Currently, the [Impostor](https://github.com/auproximity/AUP-Impostor), [Hindenburg](https://github.com/auproximity/hbplugin-auproximity) plugin and BepInEx mod are separate projects.
 
-See the Impostor fork required for the Impostor backend here: https://github.com/auproximity/Impostor
-and the plugin here: https://github.com/auproximity/AUP-Impostorv
+See the Impostor fork required for the Impostor backend here: https://github.com/auproximity/Impostor and the plugin here: https://github.com/auproximity/AUP-Impostor
 
 ## Developer Quickstart
 
@@ -67,8 +66,8 @@ for fixes and/or implementations.
 
 ## Credits
 
-The [skeldjs](https://github.com/skeldjs/SkeldJS) library by [edqx](https://github.com/edqx), used to interface with public lobbies.
+The [SkeldJS](https://github.com/skeldjs/SkeldJS) library by [edqx](https://github.com/edqx), used to interface with public lobbies.
 
 ## License
 
-This software is licensed under the GNU GPLv3 License, and comes with no warranty.
+This software is licensed under the <a href="https://github.com/auproximity/auproximity/blob/master/LICENSE">`GNU GPLv3`</a> License, and comes with no warranty.
