@@ -16,10 +16,9 @@ import { GameSettings } from "../types/models/ClientOptions";
 import { MatchmakerServers } from "../types/constants/MatchmakerServers";
 import { GameState } from "../types/enums/GameState";
 import { GameFlag } from "../types/enums/GameFlags";
+import { QuickChatMode } from "@skeldjs/client";
 
-// ~~Using integer for now, version parsing isn't working on SkeldJS with 2020.3.5.0 for some reason.~~
-// I'm keeping this comment here because it shows how stupid I am that it is in fact 2021 and not 2020.
-const GAME_VERSION = "2021.4.25.0";
+const GAME_VERSION = "2021.6.30.0";
 
 const chalk = new ch.Instance({ level: 2 });
 
@@ -54,6 +53,7 @@ export enum ConnectionErrorCode {
 	TimedOut,
 	GameNotFound,
 	FailedToJoin,
+	IncorrectChatMode,
 }
 
 export type RegionServers = [string, number][];
@@ -137,6 +137,7 @@ export default class PublicLobbyBackend extends BackendAdapter {
 		if (!this.client) {
 			this.client = new skeldjs.SkeldjsClient(GAME_VERSION, {
 				allowHost: false,
+				chatMode: skeldjs.QuickChatMode.FreeChat,
 			});
 		}
 
@@ -185,13 +186,26 @@ export default class PublicLobbyBackend extends BackendAdapter {
 						false
 					);
 				} else {
-					this.log(
-						LogMode.Warn,
-						"Failed to initially spawn, Retrying",
-						remaining,
-						"more time" + (remaining === 1 ? "" : "s") + ",",
-						"also trying another server."
-					);
+					if (err === ConnectionErrorCode.IncorrectChatMode) {
+						this.log(
+							LogMode.Warn,
+							"Failed to initially spawn, Retrying %s more time%s, also trying another chat mode, since %s didn't work",
+							remaining,
+							remaining === 1 ? "" : "s", // plural
+							skeldjs.QuickChatMode[this.client.options.chatMode]
+						);
+						this.client.options.chatMode =
+							this.client.options.chatMode === QuickChatMode.FreeChat
+								? QuickChatMode.QuickChat
+								: QuickChatMode.FreeChat; // invert chat mode
+					} else {
+						this.log(
+							LogMode.Warn,
+							"Failed to initially spawn, Retrying %s more time%s, also trying another server",
+							remaining,
+							remaining === 1 ? "" : "s" // plural
+						);
+					}
 					this.emitError(
 						"Couldn't connect to the server. Retrying " +
 							remaining +
@@ -864,6 +878,10 @@ export default class PublicLobbyBackend extends BackendAdapter {
 
 			if (e.toString().includes("Could not find the game")) {
 				return ConnectionErrorCode.GameNotFound;
+			}
+
+			if (e.toString().includes("Incorrect chat mode")) {
+				return ConnectionErrorCode.IncorrectChatMode;
 			}
 
 			return ConnectionErrorCode.FailedToJoin;
