@@ -8,7 +8,7 @@ I have an open instance hosted at https://aupro.xyz.
 
 This software should be used for personal use on public lobbies. Anyone that wants to
 have a custom solution, private server, or other commercial use for this software should
-send a direct message to <a href="https://discordapp.com/users/508426414387757057">`edward#2222`</a> on Discord.
+send a direct message to <a href="https://discord.com/users/165358687974719488">`edward#2222`</a> on Discord.
 
 ## Features
 
