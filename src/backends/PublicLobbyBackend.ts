@@ -16,7 +16,6 @@ import { GameSettings } from "../types/models/ClientOptions";
 import { MatchmakerServers } from "../types/constants/MatchmakerServers";
 import { GameState } from "../types/enums/GameState";
 import { GameFlag } from "../types/enums/GameFlags";
-import { QuickChatMode } from "@skeldjs/client";
 
 const GAME_VERSION = "2021.6.30.0";
 
@@ -195,9 +194,9 @@ export default class PublicLobbyBackend extends BackendAdapter {
 							skeldjs.QuickChatMode[this.client.options.chatMode]
 						);
 						this.client.options.chatMode =
-							this.client.options.chatMode === QuickChatMode.FreeChat
-								? QuickChatMode.QuickChat
-								: QuickChatMode.FreeChat; // invert chat mode
+							this.client.options.chatMode === skeldjs.QuickChatMode.FreeChat
+								? skeldjs.QuickChatMode.QuickChat
+								: skeldjs.QuickChatMode.FreeChat; // invert chat mode
 					} else {
 						this.log(
 							LogMode.Warn,
