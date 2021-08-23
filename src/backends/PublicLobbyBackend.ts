@@ -869,7 +869,7 @@ export default class PublicLobbyBackend extends BackendAdapter {
 				sleep(5000),
 			]);
 			if (typeof code === "object") {
-				if (code.message.message?.includes("Invalid chat mode")) {
+				if (code.message.message?.includes("Incorrect chat mode")) {
 					return ConnectionErrorCode.IncorrectChatMode;
 				}
 
