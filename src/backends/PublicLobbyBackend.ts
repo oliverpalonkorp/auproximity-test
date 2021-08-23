@@ -8,14 +8,14 @@ import * as protocol from "@skeldjs/protocol";
 import logger from "../util/logger";
 
 import { PublicLobbyBackendModel } from "../types/models/Backends";
-
-import { BackendAdapter, LogMode } from "./Backend";
-
-import { PlayerFlag } from "../types/enums/PlayerFlags";
-import { GameSettings } from "../types/models/ClientOptions";
 import { MatchmakerServers } from "../types/constants/MatchmakerServers";
+
+import { GameSettings } from "../types/models/ClientOptions";
+import { PlayerFlag } from "../types/enums/PlayerFlags";
 import { GameState } from "../types/enums/GameState";
 import { GameFlag } from "../types/enums/GameFlags";
+
+import { BackendAdapter, LogMode } from "./Backend";
 
 const GAME_VERSION = "2021.6.30.0";
 
@@ -865,8 +865,16 @@ export default class PublicLobbyBackend extends BackendAdapter {
 		try {
 			const code = await Promise.race([
 				this.client.joinGame(this.backendModel.gameCode, false),
+				this.client.decoder.wait(protocol.DisconnectPacket),
 				sleep(5000),
 			]);
+			if (typeof code === "object") {
+				if (code.message.message?.includes("Invalid chat mode")) {
+					return ConnectionErrorCode.IncorrectChatMode;
+				}
+
+				return ConnectionErrorCode.FailedToConnect;
+			}
 			if (!code) {
 				if (isFinal)
 					this.emitError("Timed out while connecting to servers.", true);
