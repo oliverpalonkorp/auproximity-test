@@ -11,7 +11,7 @@
 	"scripts": {
 		"serve": "ts-node-dev ./src/main.ts",
 		"dev": "ts-node ./src/main.ts",
-		"build": "yarn workspaces list && cross-env NODE_ENV=production tsc -p ./",
+		"build": "cross-env NODE_ENV=production tsc -p ./",
 		"build:docker": "docker build -t auproxy-backend .",
 		"start": "node ./dist/main.js",
 		"lint": "eslint ./src/**/*.ts --fix && prettier --write .",
@@ -90,7 +90,7 @@
 		"*.{json,md,ts,vue,yaml}": "prettier --write"
 	},
 	"engines": {
-		"node": "18.12.1",
+		"node": "16.18.0",
 		"npm": "8.19.2"
 	}
 }
