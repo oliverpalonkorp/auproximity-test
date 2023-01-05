@@ -88,5 +88,9 @@
 	"lint-staged": {
 		"*.ts": "eslint --cache --fix",
 		"*.{json,md,ts,vue,yaml}": "prettier --write"
+	},
+	"engines": {
+		"node": "18.12.1",
+		"npm": "8.19.2"
 	}
 }
