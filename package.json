@@ -11,7 +11,7 @@
 	"scripts": {
 		"serve": "ts-node-dev ./src/main.ts",
 		"dev": "ts-node ./src/main.ts",
-		"build": "ls && cross-env NODE_ENV=production tsc -p ./",
+		"build": "cd auproximity-webui && ls && cross-env NODE_ENV=production tsc -p ./",
 		"build:docker": "docker build -t auproxy-backend .",
 		"start": "node ./dist/main.js",
 		"lint": "eslint ./src/**/*.ts --fix && prettier --write .",
